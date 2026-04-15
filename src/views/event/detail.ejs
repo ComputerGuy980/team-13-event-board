@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= event.title %> — Events</title>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e11;
+      --surface: #17171c;
+      --surface-raised: #1f1f26;
+      --border: rgba(255,255,255,0.07);
+      --border-mid: rgba(255,255,255,0.12);
+      --accent: #7c6fff;
+      --accent-dim: rgba(124,111,255,0.15);
+      --accent-glow: rgba(124,111,255,0.25);
+      --text-primary: #f0eff6;
+      --text-secondary: #8b8a9a;
+      --text-tertiary: #4e4d5c;
+      --green: #34d399;
+      --green-dim: rgba(52,211,153,0.12);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251,191,36,0.12);
+      --red: #f87171;
+      --red-dim: rgba(248,113,113,0.12);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+    /* ── Nav ── */
+    nav {
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+    .nav-back:hover { color: var(--text-primary); }
+    .nav-back svg { opacity: 0.6; }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── Status badge ── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 1.25rem;
+    }
+    .status-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .status-published { background: var(--green-dim); color: var(--green); }
+    .status-draft     { background: var(--amber-dim); color: var(--amber); }
+    .status-cancelled { background: var(--red-dim);   color: var(--red); }
+    .status-past      { background: rgba(255,255,255,0.05); color: var(--text-secondary); }
+
+    /* ── Draft notice ── */
+    .draft-notice {
+      background: var(--amber-dim);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--amber);
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    /* ── Hero title area ── */
+    .event-category {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+    h1 {
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 300;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 2rem;
+    }
+
+    /* ── Meta grid ── */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+    }
+    .meta-cell {
+      background: var(--surface);
+      padding: 1.1rem 1.25rem;
+    }
+    .meta-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 5px;
+    }
+    .meta-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+    .meta-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .relative-time {
+      font-size: 12px;
+      color: var(--accent);
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    /* ── Capacity bar ── */
+    .cap-bar {
+      height: 3px;
+      background: var(--border-mid);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .cap-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--green);
+      transition: width 0.4s ease;
+    }
+    .cap-fill.near-full { background: var(--amber); }
+    .cap-fill.full      { background: var(--red); }
+
+    /* ── Body sections ── */
+    .section {
+      border-top: 1px solid var(--border);
+      padding-top: 1.75rem;
+      margin-top: 1.75rem;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 0.75rem;
+    }
+    .description {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 640px;
+    }
+
+    /* ── Organizer ── */
+    .organizer-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      flex-shrink: 0;
+      letter-spacing: 0.03em;
+    }
+    .organizer-name  { font-size: 14px; font-weight: 500; }
+    .organizer-title { font-size: 12px; color: var(--text-secondary); }
+
+    /* ── Actions ── */
+    .actions {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--border-mid);
+      background: var(--surface-raised);
+      color: var(--text-primary);
+      transition: border-color 0.15s, background 0.15s;
+      letter-spacing: 0.01em;
+    }
+    .btn:hover { border-color: var(--border-mid); background: rgba(255,255,255,0.06); }
+    .btn-rsvp {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn-rsvp:hover { background: #6b5fe8; border-color: #6b5fe8; }
+    .btn-cancel {
+      color: var(--red);
+      border-color: rgba(248,113,113,0.2);
+      background: transparent;
+    }
+    .btn-cancel:hover { background: var(--red-dim); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/events" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    All events
+  </a>
+  <a href="/" class="nav-brand">Events</a>
+</nav>
+
+<main class="page"
+  x-data="{ relativeTime: '' }"
+  x-init="
+    const d = new Date('<%= event.startDatetime %>');
+    const diff = d - Date.now();
+    const days = Math.round(diff / 86400000);
+    const hrs  = Math.round(diff / 3600000);
+    if      (days > 14)  relativeTime = 'in ' + days + ' days';
+    else if (days === 7) relativeTime = 'in a week';
+    else if (days > 1)   relativeTime = 'in ' + days + ' days';
+    else if (days === 1) relativeTime = 'tomorrow';
+    else if (hrs  > 1)   relativeTime = 'in ' + hrs + ' hours';
+    else if (hrs  === 1) relativeTime = 'in about an hour';
+    else if (diff > 0)   relativeTime = 'starting soon';
+    else                 relativeTime = 'already started';
+  "
+>
+
+  <%# Draft-only notice — visible to organizer / admin only %>
+  <% if (event.status === 'draft') { %>
+  <div class="draft-notice">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.2"/><line x1="7.5" y1="4.5" x2="7.5" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="10" r="0.75" fill="currentColor"/></svg>
+    This event is a draft — only you and admins can see it.
+  </div>
+  <% } %>
+
+  <%# Status badge %>
+  <span class="status-badge status-<%= event.status %>">
+    <span class="status-dot"></span>
+    <%= event.status %>
+  </span>
+
+  <p class="event-category"><%= event.category %></p>
+  <h1><%= event.title %></h1>
+
+  <!-- Meta grid -->
+  <div class="meta-grid">
+
+    <div class="meta-cell">
+      <div class="meta-label">Date &amp; time</div>
+      <div class="meta-value">
+        <%= new Date(event.startDatetime).toLocaleDateString('en-GB', {
+          weekday: 'short', day: 'numeric', month: 'long', year: 'numeric'
+        }) %>
+      </div>
+      <div class="meta-sub">
+        <%= new Date(event.startDatetime).toLocaleTimeString('en-GB', {
+          hour: '2-digit', minute: '2-digit'
+        }) %> –
+        <%= new Date(event.endDatetime).toLocaleTimeString('en-GB', {
+          hour: '2-digit', minute: '2-digit'
+        }) %>
+      </div>
+      <%# Alpine adds the client-side relative label below the authoritative server value %>
+      <div class="relative-time" x-text="relativeTime"></div>
+    </div>
+
+    <div class="meta-cell">
+      <div class="meta-label">Location</div>
+      <div class="meta-value"><%= event.location %></div>
+    </div>
+
+    <div class="meta-cell">
+      <div class="meta-label">Attendance</div>
+      <% if (event.capacity) { %>
+        <%
+          const pct = Math.round((event.rsvpCount / event.capacity) * 100);
+          const fillClass = pct >= 100 ? 'full' : pct >= 80 ? 'near-full' : '';
+        %>
+        <div class="meta-value"><%= event.rsvpCount %> / <%= event.capacity %></div>
+        <div class="meta-sub"><%= event.capacity - event.rsvpCount %> spots remaining</div>
+        <div class="cap-bar">
+          <div class="cap-fill <%= fillClass %>" style="width: <%= Math.min(pct, 100) %>%"></div>
+        </div>
+      <% } else { %>
+        <div class="meta-value"><%= event.rsvpCount %> attending</div>
+        <div class="meta-sub">No capacity limit</div>
+      <% } %>
+    </div>
+
+    <div class="meta-cell">
+      <div class="meta-label">Category</div>
+      <div class="meta-value"><%= event.category %></div>
+    </div>
+
+  </div>
+
+  <!-- Description -->
+  <div class="section">
+    <div class="section-label">About</div>
+    <p class="description"><%= event.description %></p>
+  </div>
+
+  <!-- Organizer -->
+  <div class="section">
+    <div class="section-label">Organizer</div>
+    <div class="organizer-row">
+      <div class="avatar">
+        <%= event.organizer.name.split(' ').map(p => p[0]).join('').toUpperCase() %>
+      </div>
+      <div>
+        <div class="organizer-name"><%= event.organizer.name %></div>
+        <div class="organizer-title">Event organizer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions — role-gated in the route/controller before this template renders -->
+  <div class="actions">
+
+    <%# Member: RSVP button (only when published) %>
+    <% if (viewer.role === 'member' && event.status === 'published') { %>
+      <form action="/events/<%= event.id %>/rsvp" method="POST" style="display:contents">
+        <button type="submit" class="btn btn-rsvp">RSVP to this event</button>
+      </form>
+    <% } %>
+
+    <%# Organizer (owner) or admin: manage controls %>
+    <% if (viewer.role === 'admin' || viewer.id === event.organizerId) { %>
+      <a href="/events/<%= event.id %>/edit" class="btn">Edit event</a>
+      <form action="/events/<%= event.id %>/cancel" method="POST" style="display:contents">
+        <button type="submit" class="btn btn-cancel">Cancel event</button>
+      </form>
+    <% } %>
+
+  </div>
+
+</main>
+
+</body>
+</html>
