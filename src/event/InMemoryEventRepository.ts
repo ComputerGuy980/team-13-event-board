@@ -1,4 +1,3 @@
-import { match } from "node:assert";
 import { type EventError, EventNotFound } from "./errors";
 import { Err, Ok, type Result } from "../lib/result";
 import type { EventStatus, IEventRecord } from "./Event";
@@ -51,4 +50,8 @@ class InMemoryEventRepository implements IEventRepository {
     async list_events(): Promise<Result<IEventRecord[], EventError>> {
         return Ok(this.events);
     }
+}
+
+export function CreateInMemoryEventRepository(): IEventRepository {
+    return new InMemoryEventRepository([]);
 }
