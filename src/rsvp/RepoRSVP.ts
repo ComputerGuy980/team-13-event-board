@@ -6,6 +6,9 @@ export interface IRsvpRepository {
   /** Create a new RSVP for a given event */
   createRsvp(eventId: string): RSVP | RSVPError;
 
+  /** Find a single RSVP by member + event (any status). */
+  findByMemberAndEvent(memberId: string, eventId: string): RSVP | RSVPError | undefined;
+
   /** Get the status of an existing RSVP. */
   getRsvpStatus(id: string): RSVPStatus | RSVPError;
 
