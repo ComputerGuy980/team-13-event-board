@@ -1,7 +1,7 @@
-import path from "node:path";
 import express, { Request, RequestHandler, Response } from "express";
-import session from "express-session";
 import Layouts from "express-ejs-layouts";
+import session from "express-session";
+import path from "node:path";
 import { IAuthController } from "./auth/AuthController";
 import {
   AuthenticationRequired,
@@ -9,14 +9,15 @@ import {
 } from "./auth/errors";
 import type { UserRole } from "./auth/User";
 import { IApp } from "./contracts";
+import { IEventController } from "./event/EventController";
+import { ILoggingService } from "./service/LoggingService";
 import {
+  AppSessionStore,
   getAuthenticatedUser,
   isAuthenticatedSession,
-  AppSessionStore,
   recordPageView,
   touchAppSession,
 } from "./session/AppSession";
-import { ILoggingService } from "./service/LoggingService";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -35,6 +36,7 @@ class ExpressApp implements IApp {
 
   constructor(
     private readonly authController: IAuthController,
+    private readonly eventController: IEventController,
     private readonly logger: ILoggingService,
   ) {
     this.app = express();
@@ -253,6 +255,19 @@ class ExpressApp implements IApp {
       }),
     );
 
+    // ── Event routes ─────────────────────────────────────────────────
+ 
+    this.app.get(
+      "/events/:id",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+ 
+        await this.eventController.showEventDetail(req, res, sessionStore(req));
+      }),
+    );
+
     // ── Error handler ────────────────────────────────────────────────
 
     this.app.use((err: unknown, _req: Request, res: Response, _next: (value?: unknown) => void) => {
@@ -272,7 +287,8 @@ class ExpressApp implements IApp {
 
 export function CreateApp(
   authController: IAuthController,
+  eventController: IEventController,
   logger: ILoggingService,
 ): IApp {
-  return new ExpressApp(authController, logger);
+  return new ExpressApp(authController, eventController, logger);
 }
