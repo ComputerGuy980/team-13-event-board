@@ -1,7 +1,39 @@
-import { type EventError, EventNotFound } from "./errors";
 import { Err, Ok, type Result } from "../lib/result";
+import { type EventError, EventNotFound } from "./errors";
 import type { EventStatus, IEventRecord } from "./Event";
 import type { IEventRepository } from "./EventRepository";
+
+const store: IEventRecord[] = [
+  {
+    id: 1,
+    title: "Community Hackathon 2025",
+    description:
+      "A weekend-long collaborative coding event open to all skill levels. Teams of up to four will build projects around the theme of civic tech.",
+    location: "The Foundry, 12 Mill Road, Cambridge",
+    category: "Technology",
+    status: "published",
+    capacity: 120,
+    startDatetime: Date.now() + 3 * 86400000,
+    endDatetime: Date.now() + 3 * 86400000 + 8 * 3600000,
+    organizerId: 1,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  },
+  {
+    id: 2,
+    title: "Draft Workshop",
+    description: "Work in progress.",
+    location: "TBD",
+    category: "Workshop",
+    status: "draft",
+    capacity: 20,
+    startDatetime: Date.now() + 7 * 86400000,
+    endDatetime: Date.now() + 7 * 86400000 + 2 * 3600000,
+    organizerId: 2,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  },
+];
 
 class InMemoryEventRepository implements IEventRepository {
     constructor(private readonly events: IEventRecord[]) {}
@@ -53,5 +85,5 @@ class InMemoryEventRepository implements IEventRepository {
 }
 
 export function CreateInMemoryEventRepository(): IEventRepository {
-    return new InMemoryEventRepository([]);
+    return new InMemoryEventRepository(store);
 }
