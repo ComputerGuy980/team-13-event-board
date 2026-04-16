@@ -76,6 +76,31 @@ class EventController implements IEventController {
             pageError: null,
         });
     }
+
+    async showSearch(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const session = recordPageView(store);
+        const query =
+            typeof req.query.q === "string" ? req.query.q : "";
+
+        const result = await this.service.searchEvents(query);
+
+        if (result.ok === false) {
+            this.logger.warn("Failed to search events");
+            res.status(500).render("partials/error", {
+                message: result.value.message,
+                layout: false,
+            });
+            return;
+        }
+
+        this.logger.info(`GET /events?q=${query} for ${session.browserLabel}`);
+
+        res.render("events/archive", {
+            events: result.value,
+            session,
+            pageError: null,
+        });
+    }
 }
 
 export function CreateEventController(
