@@ -10,6 +10,7 @@ import {
 import type { UserRole } from "./auth/User";
 import { IApp } from "./contracts";
 import { IEventController } from "./event/EventController";
+import { IEventService } from "./event/EventService";
 import { ILoggingService } from "./service/LoggingService";
 import {
   AppSessionStore,
@@ -37,6 +38,7 @@ class ExpressApp implements IApp {
   constructor(
     private readonly authController: IAuthController,
     private readonly eventController: IEventController,
+    private readonly eventService: IEventService,
     private readonly logger: ILoggingService,
   ) {
     this.app = express();
@@ -256,14 +258,31 @@ class ExpressApp implements IApp {
     );
 
     // ── Event routes ─────────────────────────────────────────────────
- 
+
+    this.app.use(
+      "/events",
+      asyncHandler(async (_req, _res, next) => {
+        await this.eventService.transitionExpiredEvents();
+        next();
+      }),
+    );
+    
+    this.app.get(
+      "/events/archive",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+        await this.eventController.showArchive(req, res, sessionStore(req));
+      }),
+    );
+
     this.app.get(
       "/events/:id",
       asyncHandler(async (req, res) => {
         if (!this.requireAuthenticated(req, res)) {
           return;
         }
- 
         await this.eventController.showEventDetail(req, res, sessionStore(req));
       }),
     );
@@ -288,7 +307,8 @@ class ExpressApp implements IApp {
 export function CreateApp(
   authController: IAuthController,
   eventController: IEventController,
+  eventService: IEventService,
   logger: ILoggingService,
 ): IApp {
-  return new ExpressApp(authController, eventController, logger);
+  return new ExpressApp(authController, eventController, eventService, logger);
 }
