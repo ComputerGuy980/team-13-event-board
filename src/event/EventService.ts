@@ -16,6 +16,12 @@ export interface IEventService {
     ): Promise<Result<number | null, EventError>>;
     transitionExpiredEvents(): Promise<void>;
     getArchivedEvents(): Promise<Result<IEventRecord[], EventError>>;
+
+    editEvent(
+        id: number,
+        updates: IEventRecord,
+        viewer: IAuthenticatedUserSession,
+    ): Promise<Result<IEventRecord, EventError>>;
 }
 
 class EventService implements IEventService {
@@ -119,6 +125,49 @@ class EventService implements IEventService {
         // Reverse chronological — most recently ended first
         const sorted = result.value.slice().sort((a, b) => b.endDatetime - a.endDatetime);
         return Ok(sorted);
+    }
+    async editEvent(
+        id: number,
+        updates: IEventRecord,
+        viewer: IAuthenticatedUserSession,
+    ): Promise<Result<IEventRecord, EventError>> {
+        const existing = await this.events.get_event(id);
+
+        if (existing.ok === false || !existing.value) {
+            return Err(EventNotFound(`Event ${id} not found.`));
+        }
+
+        const event = existing.value;
+
+        const canEdit =
+            viewer.role === "admin" ||
+            viewer.userId === event.organizerId;
+
+        if (!canEdit) {
+            return Err(EventNotFound("You cannot edit this event."));
+        }
+
+        if (event.status === "cancelled" || event.status === "past") {
+            return Err(EventNotFound("Past or cancelled events cannot be edited."));
+        }
+        if (!updates.title.trim()) {
+            return Err(EventNotFound("Title is required."));
+        }
+        const updated: IEventRecord = {
+            ...updates,
+            id: event.id,
+            organizerId: event.organizerId,
+            createdAt: event.createdAt,
+            updatedAt: Date.now(),
+        };
+
+        const saved = await this.events.edit_event(id, updated);
+
+        if (saved.ok === false) {
+            return Err(saved.value);
+        }
+
+        return Ok(updated);
     }
 }
 
