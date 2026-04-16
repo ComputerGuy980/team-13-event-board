@@ -11,6 +11,7 @@ export interface IEventService {
     ): Promise<Result<IEventRecord, EventError>>;
     transitionExpiredEvents(): Promise<void>;
     getArchivedEvents(): Promise<Result<IEventRecord[], EventError>>;
+    searchEvents(query: string): Promise<Result<IEventRecord[], EventError>>;
 }
 
 class EventService implements IEventService {
@@ -63,6 +64,22 @@ class EventService implements IEventService {
         // Reverse chronological — most recently ended first
         const sorted = result.value.slice().sort((a, b) => b.endDatetime - a.endDatetime);
         return Ok(sorted);
+    }
+
+    async searchEvents(query: string): Promise<Result<IEventRecord[], EventError>> {
+        const result = await this.events.list_events();
+
+        if (result.ok === false) {
+            return Err(EventNotFound("Could not load events."));
+        }
+
+        const now = Date.now();
+
+        const filtered = result.value.filter((event) => {
+            return event.status === "published" && event.endDatetime > now;
+        });
+
+        return Ok(filtered);
     }
 }
 
