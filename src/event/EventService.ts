@@ -9,6 +9,8 @@ export interface IEventService {
         id: number,
         viewer: IAuthenticatedUserSession,
     ): Promise<Result<IEventRecord, EventError>>;
+    transitionExpiredEvents(): Promise<void>;
+    getArchivedEvents(): Promise<Result<IEventRecord[], EventError>>;
 }
 
 class EventService implements IEventService {
@@ -40,6 +42,27 @@ class EventService implements IEventService {
     }
 
     return Ok(event);
+    }
+
+    async transitionExpiredEvents(): Promise<void> {
+        const now = Date.now();
+        const result = await this.events.find_by_status("published");
+        if (result.ok === false) return;
+    
+        const expired = result.value.filter((e) => e.endDatetime < now);
+        await Promise.all(
+            expired.map((e) => this.events.set_event_status(e.id, "past")),
+        );
+    }
+    
+    async getArchivedEvents(): Promise<Result<IEventRecord[], EventError>> {
+        const result = await this.events.find_by_status("past");
+        if (result.ok === false) {
+            return Err(EventNotFound("Could not load archived events."));
+        }
+        // Reverse chronological — most recently ended first
+        const sorted = result.value.slice().sort((a, b) => b.endDatetime - a.endDatetime);
+        return Ok(sorted);
     }
 }
 
