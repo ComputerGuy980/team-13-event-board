@@ -79,7 +79,7 @@
     class="w-full border border-slate-300 rounded-lg px-4 py-2"
   />
 
-  <div id="event-results" class="mt-4 text-slate-500">
-    Search results will appear here as you type.
+  <div id="event-results" class="mt-4">
+    <%- include("partials/event-search-results", { events: [] }) %>
   </div>
 </section>
