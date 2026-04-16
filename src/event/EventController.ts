@@ -7,6 +7,8 @@ import type { IEventService } from "./EventService";
 export interface IEventController {
     showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    submitEdit(req: Request, res: Response, store: AppSessionStore): Promise<void>;
 }
 
 class EventController implements IEventController {
@@ -72,6 +74,31 @@ class EventController implements IEventController {
         res.render("events/archive", {
             events: result.value,
             session,
+            pageError: null,
+        });
+    }
+
+    async showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const id = parseInt(req.params.id as string, 10);
+        const viewer = getAuthenticatedUser(store);
+
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
+        const result = await this.service.getEvent(id, viewer);
+
+        if (result.ok === false) {
+            res.status(404).render("partials/error", {
+                message: result.value.message,
+                layout: false,
+            });
+            return;
+        }
+
+        res.render("events/edit", {
+            event: result.value,
             pageError: null,
         });
     }
