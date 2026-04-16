@@ -8,6 +8,8 @@ export interface IEventController {
     createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    submitEdit(req: Request, res: Response, store: AppSessionStore): Promise<void>;
 }
 
 class EventController implements IEventController {
@@ -99,6 +101,68 @@ class EventController implements IEventController {
             session,
             pageError: null,
         });
+    }
+
+    async showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const id = parseInt(req.params.id as string, 10);
+        const viewer = getAuthenticatedUser(store);
+
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
+        const result = await this.service.getEvent(id, viewer);
+
+        if (result.ok === false) {
+            res.status(404).render("partials/error", {
+                message: result.value.message,
+                layout: false,
+            });
+            return;
+        }
+
+        res.render("events/edit", {
+            event: result.value,
+            pageError: null,
+        });
+    }
+    async submitEdit(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const id = parseInt(req.params.id as string, 10);
+        const viewer = getAuthenticatedUser(store);
+
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
+        const existing = await this.service.getEvent(id, viewer);
+
+        if (existing.ok === false) {
+            res.status(404).render("partials/error", {
+                message: existing.value.message,
+                layout: false,
+            });
+            return;
+        }
+
+        const result = await this.service.editEvent(id, {
+            ...existing.value,
+            title: String(req.body.title ?? ""),
+            description: String(req.body.description ?? ""),
+            location: String(req.body.location ?? ""),
+            category: String(req.body.category ?? ""),
+        }, viewer);
+
+        if (result.ok === false) {
+            res.status(400).render("partials/error", {
+                message: result.value.message,
+                layout: false,
+            });
+            return;
+        }
+        this.logger.info(`POST /events/${id}/edit`);
+        res.redirect(`/events/${id}`);
     }
 }
 
