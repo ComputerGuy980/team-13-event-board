@@ -153,13 +153,12 @@ class EventService implements IEventService {
         });
 
         return Ok(filtered);
-      }
     }
 
     async editEvent(
         id: number,
         updates: IEventRecord,
-        viewer: IAuthenticatedUserSession,
+        viewer: IAuthenticatedUserSession
     ): Promise<Result<IEventRecord, EventError>> {
         const existing = await this.events.get_event(id);
 
