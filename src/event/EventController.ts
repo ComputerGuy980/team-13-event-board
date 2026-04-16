@@ -6,6 +6,7 @@ import type { IEventService } from "./EventService";
 
 export interface IEventController {
     showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void>;
 }
 
 class EventController implements IEventController {
@@ -48,6 +49,28 @@ class EventController implements IEventController {
         res.render("events/detail", {
             event: result.value,
             viewer,
+            session,
+            pageError: null,
+        });
+    }
+
+    async showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const session = recordPageView(store);
+        const result = await this.service.getArchivedEvents();
+    
+        if (result.ok === false) {
+            this.logger.warn("Failed to load event archive");
+            res.status(500).render("partials/error", {
+                message: result.value.message,
+                layout: false,
+            });
+            return;
+        }
+    
+        this.logger.info(`GET /events/archive for ${session.browserLabel}`);
+    
+        res.render("events/archive", {
+            events: result.value,
             session,
             pageError: null,
         });
