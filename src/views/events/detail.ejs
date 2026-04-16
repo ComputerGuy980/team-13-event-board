@@ -130,12 +130,24 @@
     <div class="px-6 py-4 bg-slate-50 flex items-center gap-2.5 flex-wrap">
 
       <% if (canRSVP) { %>
-        <form method="POST" action="/events/<%= event.id %>/rsvp" class="m-0">
-          <button type="submit"
-            class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors">
-            RSVP to this event
-          </button>
-        </form>
+    <button
+    hx-post="/events/<%= event.id %>/rsvp"
+    hx-trigger="click"
+    hx-swap="none"
+    x-data="{ status: 'none' }"
+    @htmx:afterRequest="
+      const res = JSON.parse(event.detail.xhr.response);
+      status = res.status;
+    "
+    x-text="
+      status === 'going' ? 'Cancel RSVP' :
+      status === 'waitlisted' ? 'Leave Waitlist' :
+      'RSVP to this event'
+    "
+    class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors"
+  >
+    RSVP to this event
+      </button>
       <% } %>
 
       <% if (canManage) { %>
