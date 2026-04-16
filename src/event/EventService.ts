@@ -85,7 +85,7 @@ class EventService implements IEventService {
 
         const canEdit =
             viewer.role === "admin" ||
-            viewer.userId === String(event.organizerId);
+            viewer.userId === event.organizerId;
 
         if (!canEdit) {
             return Err(EventNotFound("You cannot edit this event."));
