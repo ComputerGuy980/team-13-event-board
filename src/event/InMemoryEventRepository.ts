@@ -15,7 +15,7 @@ const store: IEventRecord[] = [
     capacity: 120,
     startDatetime: Date.now() + 3 * 86400000,
     endDatetime: Date.now() + 3 * 86400000 + 8 * 3600000,
-    organizerId: 1,
+    organizerId: "user-reader",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   },
@@ -29,7 +29,7 @@ const store: IEventRecord[] = [
     capacity: 20,
     startDatetime: Date.now() + 7 * 86400000,
     endDatetime: Date.now() + 7 * 86400000 + 2 * 3600000,
-    organizerId: 2,
+    organizerId: "user-reader",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   },
@@ -40,6 +40,7 @@ class InMemoryEventRepository implements IEventRepository {
 
     async create_event(event: IEventRecord): Promise<Result<IEventRecord | null, EventError>> {
         try {
+            event.id = this.events.length;
             this.events.push(event);
             return Ok(event);
         } catch {
