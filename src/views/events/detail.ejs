@@ -1,0 +1,162 @@
+<%
+  const pct = event.capacity ? Math.min(Math.round((event.rsvpCount / event.capacity) * 100), 100) : 0;
+  const spotsLeft = event.capacity ? event.capacity - event.rsvpCount : null;
+  const isOrganizer = viewer.userId === String(event.organizerId);
+  const canManage = viewer.role === 'admin' || isOrganizer;
+  const canRSVP = viewer.role !== 'admin' && !isOrganizer && event.status === 'published';
+
+  const startDate = new Date(event.startDatetime);
+  const endDate = new Date(event.endDatetime);
+
+  const formattedDate = startDate.toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+  const formattedStart = startDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const formattedEnd = endDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  const statusStyles = {
+    published: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+    draft:     'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+    cancelled: 'bg-red-50 text-red-600 ring-1 ring-red-200',
+    past:      'bg-slate-100 text-slate-500 ring-1 ring-slate-200',
+  };
+  const statusDots = {
+    published: 'bg-emerald-500',
+    draft:     'bg-amber-400',
+    cancelled: 'bg-red-400',
+    past:      'bg-slate-400',
+  };
+%>
+
+<div class="max-w-2xl mx-auto py-6">
+
+  <%# Back link %>
+  <a href="/events" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 no-underline mb-6">
+    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 11L5 7l4-4"/>
+    </svg>
+    All events
+  </a>
+
+  <%# Draft notice %>
+  <% if (event.status === 'draft') { %>
+  <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3 mb-5">
+    <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="8.5" stroke-linecap="round"/><circle cx="8" cy="10.5" r="0.75" fill="currentColor" stroke="none"/></svg>
+    <span>This event is a draft — only you and admins can see it.</span>
+  </div>
+  <% } %>
+
+  <%# Main card %>
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+    <%# Header %>
+    <div class="px-6 pt-6 pb-5 border-b border-slate-100">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full <%= statusStyles[event.status] %>">
+          <span class="w-1.5 h-1.5 rounded-full <%= statusDots[event.status] %>"></span>
+          <%= event.status %>
+        </span>
+        <span class="text-xs text-slate-400 font-medium uppercase tracking-wide"><%= event.category %></span>
+      </div>
+      <h1 class="text-2xl font-semibold text-slate-900 leading-snug"><%= event.title %></h1>
+    </div>
+
+    <%# Meta row %>
+    <div class="grid grid-cols-2 divide-x divide-y divide-slate-100 border-b border-slate-100">
+
+      <div class="px-5 py-4"
+        x-data="{ label: '' }"
+        x-init="
+          const d = new Date('<%= event.startDatetime %>');
+          const diff = d - Date.now();
+          const days = Math.round(diff / 86400000);
+          const hrs  = Math.round(diff / 3600000);
+          if      (days > 14)  label = 'in ' + days + ' days';
+          else if (days === 7) label = 'in a week';
+          else if (days > 1)   label = 'in ' + days + ' days';
+          else if (days === 1) label = 'tomorrow';
+          else if (hrs  > 1)   label = 'in ' + hrs + ' hours';
+          else if (hrs  === 1) label = 'in about an hour';
+          else if (diff > 0)   label = 'starting soon';
+          else                 label = 'in the past';
+        "
+      >
+        <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1">Date</p>
+        <p class="text-sm font-medium text-slate-800"><%= formattedDate %></p>
+        <p class="text-xs text-slate-500"><%= formattedStart %> – <%= formattedEnd %></p>
+        <p class="text-xs text-blue-500 italic mt-0.5" x-text="label"></p>
+      </div>
+
+      <div class="px-5 py-4">
+        <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1">Location</p>
+        <p class="text-sm font-medium text-slate-800"><%= event.location %></p>
+      </div>
+
+      <div class="px-5 py-4">
+        <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1">Attendance</p>
+        <% if (event.capacity) { %>
+          <p class="text-sm font-medium text-slate-800"><%= event.rsvpCount %> / <%= event.capacity %> attending</p>
+          <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-all <%= pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-400' %>"
+              style="width: <%= pct %>%">
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-1"><%= spotsLeft %> spot<%= spotsLeft === 1 ? '' : 's' %> left</p>
+        <% } else { %>
+          <p class="text-sm font-medium text-slate-800"><%= event.rsvpCount %> attending</p>
+          <p class="text-xs text-slate-400 mt-0.5">No capacity limit</p>
+        <% } %>
+      </div>
+
+      <div class="px-5 py-4">
+        <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1">Organizer</p>
+        <div class="flex items-center gap-2 mt-1">
+          <div class="w-7 h-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-xs font-semibold text-blue-600 shrink-0">
+            <%= event.organizerId %>
+          </div>
+          <span class="text-sm font-medium text-slate-800"><%= event.organizerId %></span>
+        </div>
+      </div>
+
+    </div>
+
+    <%# Description %>
+    <div class="px-6 py-5 border-b border-slate-100">
+      <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-2">About</p>
+      <p class="text-sm text-slate-600 leading-relaxed"><%= event.description %></p>
+    </div>
+
+    <%# Actions %>
+    <div class="px-6 py-4 bg-slate-50 flex items-center gap-2.5 flex-wrap">
+
+      <% if (canRSVP) { %>
+        <form method="POST" action="/events/<%= event.id %>/rsvp" class="m-0">
+          <button type="submit"
+            class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors">
+            RSVP to this event
+          </button>
+        </form>
+      <% } %>
+
+      <% if (canManage) { %>
+        <a href="/events/<%= event.id %>/edit"
+          class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 text-sm font-medium no-underline hover:bg-slate-50 transition-colors">
+          Edit event
+        </a>
+        <form method="POST" action="/events/<%= event.id %>/cancel" class="m-0">
+          <button type="submit"
+            class="px-4 py-2 rounded-lg bg-white border border-red-200 text-red-600 text-sm font-medium cursor-pointer hover:bg-red-50 transition-colors">
+            Cancel event
+          </button>
+        </form>
+      <% } %>
+
+      <% if (event.status === 'cancelled') { %>
+        <p class="text-sm text-slate-400 italic">This event has been cancelled.</p>
+      <% } %>
+
+    </div>
+
+  </div>
+
+</div>
