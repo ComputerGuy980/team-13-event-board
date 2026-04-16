@@ -75,8 +75,19 @@ class EventService implements IEventService {
 
         const now = Date.now();
 
+        const normalized = query.trim().toLowerCase();
+
         const filtered = result.value.filter((event) => {
-            return event.status === "published" && event.endDatetime > now;
+            const isPublishedUpcoming =
+                event.status === "published" && event.endDatetime > now;
+
+            if (!isPublishedUpcoming) return false;
+
+            return (
+                event.title.toLowerCase().includes(normalized) ||
+                event.description.toLowerCase().includes(normalized) ||
+                event.location.toLowerCase().includes(normalized)
+            );
         });
 
         return Ok(filtered);
