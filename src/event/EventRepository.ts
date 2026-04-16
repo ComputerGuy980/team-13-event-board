@@ -6,6 +6,7 @@ export interface IEventRepository {
     create_event(event: IEventRecord): Promise<Result<IEventRecord | null, EventError>>
     get_event(id: number): Promise<Result<IEventRecord | null, EventError>>
     edit_event(id: number, event: IEventRecord): Promise<Result<boolean, EventError>>
+    find_by_status(status: EventStatus): Promise<Result<IEventRecord[], Error>>;
     set_event_status(id: number, status: EventStatus): Promise<Result<boolean, EventError>>;
     list_events(): Promise<Result<IEventRecord[], EventError>>
 }

@@ -68,6 +68,11 @@ class InMemoryEventRepository implements IEventRepository {
         }
     }
 
+    async find_by_status(status: EventStatus): Promise<Result<IEventRecord[], Error>> {
+        const events = store.filter((e) => e.status === status);
+        return Ok(events);
+    }
+
     async set_event_status(id: number, status: EventStatus): Promise<Result<boolean, EventError>> {
         try {
             const match = this.events.find(e => e.id === id);
