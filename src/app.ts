@@ -284,7 +284,7 @@ class ExpressApp implements IApp {
           return;
         }
         await this.eventController.showSearch(req, res, sessionStore(req));
-    }),
+      }),
     );
 
     this.app.get(
