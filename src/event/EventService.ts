@@ -94,7 +94,9 @@ class EventService implements IEventService {
         if (event.status === "cancelled" || event.status === "past") {
             return Err(EventNotFound("Past or cancelled events cannot be edited."));
         }
-
+        if (!updates.title.trim()) {
+            return Err(EventNotFound("Title is required."));
+        }
         const updated: IEventRecord = {
             ...updates,
             id: event.id,
