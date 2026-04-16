@@ -7,6 +7,7 @@ import type { IEventService } from "./EventService";
 export interface IEventController {
     showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    showSearch(req: Request, res: Response, store: AppSessionStore): Promise<void>;
 }
 
 class EventController implements IEventController {
