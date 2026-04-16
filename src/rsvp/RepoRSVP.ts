@@ -4,6 +4,9 @@ import type { RSVPError } from "./RouteErrorRSVP";
 
 export interface IRsvpRepository {
 
+  /** Create a new RSVP record. Called by the service after business logic decides the status. */
+  create(userId: string, eventId: string, status: RSVPStatus): Promise<RSVP>;
+
   /** Find a single RSVP by user + event (any status). */
   findByMemberAndEvent(userId: string, eventId: string): Promise<Result< RSVP | undefined,  RSVPError>>;
 

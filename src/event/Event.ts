@@ -15,7 +15,7 @@ export interface IEventRecord {
     startDatetime: number,
     endDatetime: number,
     
-    organizerId: number,
+    organizerId: string,
 
     createdAt: number,
     updatedAt: number
