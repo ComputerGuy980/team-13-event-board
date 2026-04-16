@@ -82,6 +82,7 @@ class EventService implements IEventService {
                 event.status === "published" && event.endDatetime > now;
 
             if (!isPublishedUpcoming) return false;
+            if (!normalized) return true;
 
             return (
                 event.title.toLowerCase().includes(normalized) ||
