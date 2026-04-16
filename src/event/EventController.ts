@@ -136,7 +136,7 @@ class EventController implements IEventController {
             });
             return;
         }
-
+        this.logger.info(`POST /events/${id}/edit`);
         res.redirect(`/events/${id}`);
     }
 }
