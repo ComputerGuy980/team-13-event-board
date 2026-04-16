@@ -1,7 +1,7 @@
 import type { Result } from "../lib/result";
-import type { RSVP, RSVPStatus } from "./RSVP.ts";
-import type { IRsvpRepository } from "./RepoRSVP.ts";
-import { RSVPNotFound } from "./ErrorRSVP";
+import type { RSVP, RSVPStatus } from "./RSVP";
+import type { IRsvpRepository } from "./RepoRSVP";
+import { RSVPNotFound } from "./RouteErrorRSVP";
  
 export class InMemoryRsvpRepository implements IRsvpRepository {
   private readonly store = new Map<string, RSVP>();
