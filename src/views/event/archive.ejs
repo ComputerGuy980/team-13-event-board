@@ -1,0 +1,112 @@
+<%
+  const allCategories = [...new Set(events.map(e => e.category))].sort();
+%>
+
+<div
+  class="max-w-2xl mx-auto py-6"
+  x-data="{ activeCategory: 'all' }"
+>
+
+  <%# Header %>
+  <div class="mb-6">
+    <a href="/events" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 no-underline mb-4">
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11L5 7l4-4"/>
+      </svg>
+      All events
+    </a>
+    <h1 class="text-2xl font-semibold text-slate-900">Archive</h1>
+    <p class="text-sm text-slate-500 mt-1"><%= events.length %> past event<%= events.length === 1 ? '' : 's' %></p>
+  </div>
+
+  <%# Category filter pills %>
+  <% if (allCategories.length > 0) { %>
+  <div class="flex items-center gap-2 flex-wrap mb-6">
+    <button
+      @click="activeCategory = 'all'"
+      :class="activeCategory === 'all'
+        ? 'bg-slate-800 text-white border-slate-800'
+        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+      class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer"
+    >
+      All
+    </button>
+    <% allCategories.forEach(category => { %>
+    <button
+      @click="activeCategory = '<%= category %>'"
+      :class="activeCategory === '<%= category %>'"
+      x-bind:class="activeCategory === '<%= category %>'
+        ? 'bg-slate-800 text-white border-slate-800'
+        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+      class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer"
+    >
+      <%= category %>
+    </button>
+    <% }) %>
+  </div>
+  <% } %>
+
+  <%# Empty state %>
+  <template x-if="activeCategory !== 'all' && !<%= JSON.stringify(allCategories) %>.includes(activeCategory)">
+    <p class="text-sm text-slate-400 italic py-8 text-center">No events in this category.</p>
+  </template>
+
+  <%# Event list %>
+  <% if (events.length === 0) { %>
+    <div class="text-center py-16">
+      <p class="text-sm font-medium text-slate-500">No past events yet.</p>
+      <p class="text-sm text-slate-400 mt-1">Completed events will appear here.</p>
+    </div>
+  <% } else { %>
+    <div class="flex flex-col gap-3">
+      <% events.forEach(event => { %>
+        <div
+          x-show="activeCategory === 'all' || activeCategory === '<%= event.category %>'"
+          x-transition:enter="transition ease-out duration-150"
+          x-transition:enter-start="opacity-0 translate-y-1"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+        >
+          <a href="/events/<%= event.id %>" class="block px-5 py-4 no-underline group">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                  <%= event.title %>
+                </p>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  <%= new Date(event.startDatetime).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                  }) %>
+                  &middot; <%= event.location %>
+                </p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                  <%= event.category %>
+                </span>
+                <% if (event.capacity) { %>
+                  <span class="text-xs text-slate-400">
+                    <%= event.rsvpCount %>/<%= event.capacity %>
+                  </span>
+                <% } else { %>
+                  <span class="text-xs text-slate-400">
+                    <%= event.rsvpCount %> attended
+                  </span>
+                <% } %>
+              </div>
+            </div>
+          </a>
+        </div>
+      <% }) %>
+    </div>
+
+    <%# Per-category empty state %>
+    <div
+      x-show="activeCategory !== 'all' && !<%= JSON.stringify(events.map(e => e.category)) %>.includes(activeCategory)"
+      class="text-center py-12"
+    >
+      <p class="text-sm text-slate-400">No past events in this category.</p>
+    </div>
+  <% } %>
+
+</div>
