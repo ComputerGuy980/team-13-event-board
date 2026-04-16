@@ -5,6 +5,7 @@ import { getAuthenticatedUser, recordPageView } from "../session/AppSession";
 import type { IEventService } from "./EventService";
 
 export interface IEventController {
+    createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void>;
 }
@@ -14,6 +15,30 @@ class EventController implements IEventController {
         private readonly service: IEventService,
         private readonly logger: ILoggingService,
     ) {}
+
+    async createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const viewer = getAuthenticatedUser(store);
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
+        const session = recordPageView(store);
+        const result = await this.service.createEvent(req.body, viewer);
+
+        if (result.ok === false) {
+            this.logger.warn("Event creation failed.");
+            res.status(404).render("partials/error", {
+                message: result.value.message,
+                layout: false
+            });
+            return;
+        }
+    
+        this.logger.info(`GET /events/create for ${session.browserLabel}`);
+
+        res.redirect(`/events/${result.value}`);
+    }
 
     async showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void> {
         const id = parseInt(req.params.id as string, 10);
