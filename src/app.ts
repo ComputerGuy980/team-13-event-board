@@ -283,6 +283,7 @@ class ExpressApp implements IApp {
         if (!this.requireAuthenticated(req, res)) {
           return;
         }
+        this.logger.info(`GET /events/${req.params.id}/edit`);
         await this.eventController.showEditForm(req, res, sessionStore(req));
       }),
     );
