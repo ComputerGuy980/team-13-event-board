@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import type { IRsvpService } from "./IRSVPService";
 import type { AppSessionStore } from "../session/AppSession";
 import { getAuthenticatedUser, recordPageView } from "../session/AppSession";
+import { RSVPServiceError } from "./ServiceErrorRSVP";
 
 export interface IRsvpController {
   toggleRsvp(req: Request, res: Response, store: AppSessionStore): Promise<void>;
@@ -44,9 +45,10 @@ if (!eventId) {
     );
 
     if (!result.ok) {
-      res.status(400).send(result.value.message);
-      return;
-    }
+  const err = result.value as RSVPServiceError;
+  res.status(400).send(err.message);
+  return;
+}
 
     // 🔑 return JSON for frontend update
     res.json({
@@ -70,14 +72,15 @@ if (!eventId) {
     );
 
     if (!result.ok) {
-      res.status(403).render("partials/error", {
-        message: result.value.message,
-        layout: false,
-      });
-      return;
-    }
+  const err = result.value as RSVPServiceError;
+  res.status(403).render("partials/error", {
+    message: err.message,
+    layout: false,
+  });
+  return;
+}
 
-    res.render("rsvps/dashboard", {
+    res.render("rsvp/dashboard", {
       dashboard: result.value,
       viewer,
       session,

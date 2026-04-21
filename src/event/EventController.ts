@@ -3,6 +3,7 @@ import type { ILoggingService } from "../service/LoggingService";
 import type { AppSessionStore } from "../session/AppSession";
 import { getAuthenticatedUser, recordPageView } from "../session/AppSession";
 import type { IEventService } from "./EventService";
+import type { IRsvpRepository } from "../rsvp/RepoRSVP";
 
 export interface IEventController {
     createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
@@ -14,6 +15,7 @@ class EventController implements IEventController {
     constructor(
         private readonly service: IEventService,
         private readonly logger: ILoggingService,
+        private readonly rsvpRepository: IRsvpRepository,
     ) {}
 
     async createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void> {
@@ -69,10 +71,27 @@ class EventController implements IEventController {
             return;
         }
 
+        const event = result.value;
+
+        // Fetch RSVP data for this event
+        const rsvpsResult = await this.rsvpRepository.listEventRsvps(String(event.id));
+        const rsvps = rsvpsResult.ok ? rsvpsResult.value : [];
+        const rsvpCount = rsvps.filter((r) => r.status === "going").length;
+
+        const userRsvp = rsvps.find((r) => r.userId === viewer.userId);
+        const userRsvpStatus = userRsvp?.status || "none";
+
+        // Enhance event object with RSVP info
+        const eventWithRsvp = {
+            ...event,
+            rsvpCount,
+            userRsvpStatus,
+        };
+
         this.logger.info(`GET /events/${id} for ${session.browserLabel}`);
 
         res.render("events/detail", {
-            event: result.value,
+            event: eventWithRsvp,
             viewer,
             session,
             pageError: null,
@@ -105,6 +124,7 @@ class EventController implements IEventController {
 export function CreateEventController(
     service: IEventService,
     logger: ILoggingService,
+    rsvpRepository: IRsvpRepository,
 ): IEventController {
-    return new EventController(service, logger);
+    return new EventController(service, logger, rsvpRepository);
 }
