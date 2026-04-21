@@ -19,6 +19,7 @@ import {
   recordPageView,
   touchAppSession,
 } from "./session/AppSession";
+import { IRsvpController } from "./rsvp/RsvpController";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -38,6 +39,7 @@ class ExpressApp implements IApp {
   constructor(
     private readonly authController: IAuthController,
     private readonly eventController: IEventController,
+    private readonly rsvpController: IRsvpController,
     private readonly eventService: IEventService,
     private readonly logger: ILoggingService,
   ) {
@@ -342,6 +344,28 @@ class ExpressApp implements IApp {
       }),
     );
     
+    this.app.post(
+  "/events/:id/rsvp",
+  asyncHandler(async (req, res) => {
+    if (!this.requireAuthenticated(req, res)) {
+      return;
+    }
+
+    await this.rsvpController.toggleRsvp(req, res, sessionStore(req));
+  }),
+);
+
+this.app.get(
+  "/my-rsvps",
+  asyncHandler(async (req, res) => {
+    if (!this.requireAuthenticated(req, res)) {
+      return;
+    }
+
+    await this.rsvpController.showDashboard(req, res, sessionStore(req));
+  }),
+);
+
     // ── Error handler ────────────────────────────────────────────────
     
     this.app.use((err: unknown, _req: Request, res: Response, _next: (value?: unknown) => void) => {
@@ -364,6 +388,7 @@ export function CreateApp(
   eventController: IEventController,
   eventService: IEventService,
   logger: ILoggingService,
+  rsvpController: IRsvpController
 ): IApp {
-  return new ExpressApp(authController, eventController, eventService, logger);
+  return new ExpressApp(authController, eventController, rsvpController, eventService, logger);
 }

@@ -56,5 +56,10 @@ export class InMemoryRsvpRepository implements IRsvpRepository {
     const results = [...this.store.values()].filter((r) => r.userId === userId);
     return { ok: true, value: results };
   }
+
+  async listEventRsvps(eventId: string): Promise<Result<RSVP[], never>> {
+    const results = [...this.store.values()].filter((r) => r.eventId === eventId);
+    return { ok: true, value: results };
+  }
 }
  

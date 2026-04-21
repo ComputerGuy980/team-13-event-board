@@ -98,7 +98,7 @@
           <p class="text-sm font-medium text-slate-800"><%= event.rsvpCount %> / <%= event.capacity %> attending</p>
           <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div class="h-full rounded-full transition-all <%= pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-400' %>"
-              style="width: <%= pct %>%">
+              style="width: <%= pct + '%' %>">
             </div>
           </div>
           <p class="text-xs text-slate-400 mt-1"><%= spotsLeft %> spot<%= spotsLeft === 1 ? '' : 's' %> left</p>
@@ -130,12 +130,24 @@
     <div class="px-6 py-4 bg-slate-50 flex items-center gap-2.5 flex-wrap">
 
       <% if (canRSVP) { %>
-        <form method="POST" action="/events/<%= event.id %>/rsvp" class="m-0">
-          <button type="submit"
-            class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors">
-            RSVP to this event
-          </button>
-        </form>
+    <button
+    hx-post="/events/<%= event.id %>/rsvp"
+    hx-trigger="click"
+    hx-swap="none"
+    x-data="{ status: '<%= event.userRsvpStatus %>' }"
+    @htmx:afterRequest="
+      const res = JSON.parse(event.detail.xhr.response);
+      status = res.status;
+    "
+    x-text="
+      status === 'going' ? 'Cancel RSVP' :
+      status === 'waitlisted' ? 'Leave Waitlist' :
+      'RSVP to this event'
+    "
+    class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors"
+  >
+    RSVP to this event
+      </button>
       <% } %>
 
       <% if (canManage) { %>

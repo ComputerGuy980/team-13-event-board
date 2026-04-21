@@ -1,0 +1,60 @@
+<div class="max-w-2xl mx-auto py-6">
+
+  <h1 class="text-2xl font-semibold mb-6">My RSVPs</h1>
+
+  <%# Upcoming %>
+  <h2 class="text-lg font-medium mb-3">Upcoming</h2>
+
+  <% if (dashboard.upcoming.length === 0) { %>
+    <p class="text-sm text-slate-400 mb-6">No upcoming RSVPs.</p>
+  <% } else { %>
+    <div class="flex flex-col gap-3 mb-8">
+      <% dashboard.upcoming.forEach(item => { %>
+        <div class="bg-white border rounded-xl px-4 py-3 flex justify-between items-center">
+          
+          <div>
+            <p class="font-medium"><%= item.event.title %></p>
+            <p class="text-xs text-slate-400">
+              <%= new Date(item.event.startDatetime).toLocaleDateString() %>
+            </p>
+            <p class="text-xs">
+              Status: <%= item.rsvp.status %>
+            </p>
+          </div>
+
+          <button
+            hx-post="/events/<%= item.event.id %>/rsvp"
+            hx-trigger="click"
+            hx-swap="none"
+            class="text-sm px-3 py-1.5 rounded-lg bg-red-100 text-red-600"
+          >
+            Cancel
+          </button>
+
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <%# Past / Cancelled %>
+  <h2 class="text-lg font-medium mb-3">Past / Cancelled</h2>
+
+  <% if (dashboard.pastOrCancelled.length === 0) { %>
+    <p class="text-sm text-slate-400">No past RSVPs.</p>
+  <% } else { %>
+    <div class="flex flex-col gap-3">
+      <% dashboard.pastOrCancelled.forEach(item => { %>
+        <div class="bg-slate-50 border rounded-xl px-4 py-3">
+          <p class="font-medium"><%= item.event.title %></p>
+          <p class="text-xs text-slate-400">
+            <%= new Date(item.event.startDatetime).toLocaleDateString() %>
+          </p>
+          <p class="text-xs">
+            Status: <%= item.rsvp.status %>
+          </p>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+</div>

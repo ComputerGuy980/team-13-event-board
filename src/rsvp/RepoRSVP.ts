@@ -17,5 +17,8 @@ export interface IRsvpRepository {
   toggleRsvpStatus(id: string, status: RSVPStatus): Promise<Result< RSVP,  RSVPError>>;
  
   /** Return all RSVPs belonging to a user. */
-  listUserRsvps(userId: string): Promise<Result< RSVP[],  RSVPError>>; 
+  listUserRsvps(userId: string): Promise<Result< RSVP[],  RSVPError>>;
+
+  /** Return all RSVPs for an event (any status). */
+  listEventRsvps(eventId: string): Promise<Result< RSVP[],  RSVPError>>;
 }

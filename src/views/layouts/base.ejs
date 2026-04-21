@@ -19,25 +19,35 @@
           Project Starter
         </a>
         <div class="flex items-center gap-3 flex-wrap">
-          <% if (session?.authenticatedUser) { %>
-            <% if (session.authenticatedUser.role === "admin") { %>
-              <a href="/admin/users" class="text-blue-700 font-semibold no-underline hover:underline">Manage Users</a>
-            <% } %>
-            <span class="text-slate-500">
-              Signed in as <strong class="text-slate-700"><%= session.authenticatedUser.displayName %></strong>
-              (<%= session.authenticatedUser.role %>)
-            </span>
-            <form method="post" action="/logout" class="m-0">
-              <button
-                type="submit"
-                class="px-3.5 py-2 rounded-lg bg-white text-blue-700 border border-slate-200 cursor-pointer hover:bg-blue-50 text-sm font-medium"
-              >
-                Log out
-              </button>
-            </form>
-          <% } else { %>
-            <a href="/login" class="text-blue-700 font-semibold no-underline hover:underline">Log in</a>
-          <% } %>
+  <% if (session?.authenticatedUser) { %>
+
+    <a href="/my-rsvps" class="text-blue-700 font-semibold no-underline hover:underline">
+      My RSVPs
+    </a>
+
+    <% if (session.authenticatedUser.role === "admin") { %>
+      <a href="/admin/users" class="text-blue-700 font-semibold no-underline hover:underline">
+        Manage Users
+      </a>
+    <% } %>
+
+    <span class="text-slate-500">
+      Signed in as <strong class="text-slate-700"><%= session.authenticatedUser.displayName %></strong>
+      (<%= session.authenticatedUser.role %>)
+    </span>
+
+    <form method="post" action="/logout" class="m-0">
+      <button
+        type="submit"
+        class="px-3.5 py-2 rounded-lg bg-white text-blue-700 border border-slate-200 cursor-pointer hover:bg-blue-50 text-sm font-medium"
+      >
+        Log out
+      </button>
+    </form>
+
+  <% } else { %>
+    <a href="/login" class="text-blue-700 font-semibold no-underline hover:underline">Log in</a>
+  <% } %>
         </div>
       </nav>
       <main class="max-w-5xl mx-auto"><%- body %></main>
