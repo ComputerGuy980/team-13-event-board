@@ -124,11 +124,18 @@ class EventController implements IEventController {
     }
 
     async showSearch(req: Request, res: Response, store: AppSessionStore): Promise<void> {
-        const session = recordPageView(store);
+        const viewer = getAuthenticatedUser(store);
+
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
         const query =
-            typeof req.query.q === "string" ? req.query.q : "";
+            typeof req.query.query === "string" ? req.query.query : "";
 
         const result = await this.service.searchEvents(query);
+        const session = recordPageView(store);
 
         if (result.ok === false) {
             this.logger.warn("Failed to search events");
@@ -140,15 +147,16 @@ class EventController implements IEventController {
         }
         
           
-        this.logger.info(`GET /events?q=${query} for ${session.browserLabel}`);
+        this.logger.info(`GET /events?query=${query} for ${session.browserLabel}`);
 
         res.render("events/archive", {
             events: result.value,
             session,
             pageError: null,
+            layout: false
         });
     }
-      
+    
     async showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void> {
         const id = parseInt(req.params.id as string, 10);
         const viewer = getAuthenticatedUser(store);
@@ -158,19 +166,21 @@ class EventController implements IEventController {
             return;
         }
 
+        const session = recordPageView(store);
         const result = await this.service.getEvent(id, viewer);
 
         if (result.ok === false) {
             res.status(404).render("partials/error", {
                 message: result.value.message,
-                layout: false,
+                layout: false
             });
             return;
         }
 
         res.render("events/edit", {
             event: result.value,
-            pageError: null,
+            session,
+            pageError: null
         });
     }
 
