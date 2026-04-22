@@ -168,8 +168,11 @@ class EventController implements IEventController {
             return;
         }
 
+        const session = recordPageView(store);
+
         res.render("events/edit", {
             event: result.value,
+            session,
             pageError: null,
         });
     }
@@ -199,6 +202,7 @@ class EventController implements IEventController {
             description: String(req.body.description ?? ""),
             location: String(req.body.location ?? ""),
             category: String(req.body.category ?? ""),
+            capacity: Number(req.body.capacity ?? existing.value.capacity),
         }, viewer);
 
         if (result.ok === false) {
