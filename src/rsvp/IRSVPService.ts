@@ -13,8 +13,10 @@ export interface RSVPWithEvent {
 export interface DashboardView {
   /** Active RSVPs for future events — sorted soonest first. */
   upcoming: RSVPWithEvent[];
-  /** Cancelled RSVPs or RSVPs for past events — sorted most recent first. */
-  pastOrCancelled: RSVPWithEvent[];
+  /** RSVPs the user cancelled (excluding past events) — sorted most recent first. */
+  noLongerRSVPd: RSVPWithEvent[];
+  /** Events that were cancelled by organizer/admin or past events — sorted most recent first. */
+  cancelled: RSVPWithEvent[];
 }
  
 // ── Service interface ─────────────────────────────────────────────────────────
