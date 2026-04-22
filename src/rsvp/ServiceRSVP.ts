@@ -79,49 +79,57 @@ export class RsvpService implements IRsvpService {
     userId: string,
     userRole: "member" | "organizer" | "admin"
   ): Promise<Result<DashboardView, RSVPServiceError>> {
- 
+
     if (userRole === "organizer") return Err(AccessDenied("Organizers do not have an RSVPs dashboard."));
     if (userRole === "admin") return Err(AccessDenied("Admins do not have an RSVPs dashboard."));
- 
+
     const rsvpsResult = await this.rsvpRepo.listUserRsvps(userId);
     if (!rsvpsResult.ok) return Err(AccessDenied("Could not retrieve RSVPs."));
- 
+
     const rsvps = rsvpsResult.value;
- 
+
     // Fetch all events in parallel
     const eventResults = await Promise.all(
       rsvps.map((r) => this.eventRepo.get_event(Number(r.eventId)))
     );
- 
+
     const now = Date.now();
     const upcoming: RSVPWithEvent[] = [];
-    const pastOrCancelled: RSVPWithEvent[] = [];
- 
+    const noLongerRSVPd: RSVPWithEvent[] = [];
+    const cancelled: RSVPWithEvent[] = [];
+
     for (let i = 0; i < rsvps.length; i++) {
       const rsvp = rsvps[i];
       const eventResult = eventResults[i];
- 
+
       // Skip RSVPs whose event could not be found
       if (!eventResult.ok || !eventResult.value) continue;
- 
+
       const event = eventResult.value;
       const isActive = rsvp.status === "going" || rsvp.status === "waitlisted";
       const isFuture = event.endDatetime > now;
- 
+
       if (isActive && isFuture) {
         upcoming.push({ rsvp, event });
+      } else if (rsvp.status === "cancelled" && isFuture) {
+        // User cancelled, but event hasn't happened yet
+        noLongerRSVPd.push({ rsvp, event });
       } else {
-        pastOrCancelled.push({ rsvp, event });
+        // Event was cancelled OR event is in the past
+        cancelled.push({ rsvp, event });
       }
     }
- 
+
     // Soonest first for upcoming
     upcoming.sort((a, b) => a.event.startDatetime - b.event.startDatetime);
- 
-    // Most recent first for past/cancelled
-    pastOrCancelled.sort((a, b) => b.event.startDatetime - a.event.startDatetime);
- 
-    return Ok({ upcoming, pastOrCancelled });
+
+    // Most recent first for no longer RSVP'd
+    noLongerRSVPd.sort((a, b) => b.event.startDatetime - a.event.startDatetime);
+
+    // Most recent first for cancelled
+    cancelled.sort((a, b) => b.event.startDatetime - a.event.startDatetime);
+
+    return Ok({ upcoming, noLongerRSVPd, cancelled });
   }
  
   // ── Private helpers ───────────────────────────────────────────────────────
