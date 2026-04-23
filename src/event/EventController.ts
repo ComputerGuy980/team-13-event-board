@@ -147,9 +147,7 @@ class EventController implements IEventController {
             });
             return;
         }
-
         
-          
         this.logger.info(`GET /events?query=${query} for ${session.browserLabel}`);
 
         const isHtmx = req.headers["hx-request"];
@@ -164,8 +162,7 @@ class EventController implements IEventController {
         return res.render("events/archive", {
             events: result.value,
             session,
-            pageError: null,
-            layout: false
+            pageError: null
         });
     }
     
