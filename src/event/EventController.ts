@@ -138,11 +138,21 @@ class EventController implements IEventController {
             });
             return;
         }
+
         
           
         this.logger.info(`GET /events?q=${query} for ${session.browserLabel}`);
 
-        res.render("events/archive", {
+        const isHtmx = req.headers["hx-request"];
+
+        if (isHtmx) {
+            return res.render("partials/event-search-results", {
+                events: result.value,
+                layout: false,
+            });
+        }
+
+        return res.render("events/archive", {
             events: result.value,
             session,
             pageError: null,
