@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import type { IRsvpService } from "./IRSVPService";
+import type { IEventRepository } from "../event/EventRepository";
 import type { AppSessionStore } from "../session/AppSession";
 import { getAuthenticatedUser, recordPageView } from "../session/AppSession";
 import { RSVPServiceError } from "./ServiceErrorRSVP";
@@ -11,8 +12,9 @@ export interface IRsvpController {
 
 function mapRole(role: string): "admin" | "member" | "organizer" {
   if (role === "admin") return "admin";
-  if (role === "organizer") return "organizer";
-  return "member"; // treat everything else (including "staff") as member
+  // In the current system, there's no "organizer" role - just "admin", "staff", and "user"
+  // All non-admin roles map to "member"
+  return "member";
 }
 
 function getParam(param: string | string[] | undefined): string | null {
@@ -21,7 +23,10 @@ function getParam(param: string | string[] | undefined): string | null {
 }
 
 class RsvpController implements IRsvpController {
-  constructor(private readonly service: IRsvpService) {}
+  constructor(
+    private readonly service: IRsvpService,
+    private readonly eventRepository: IEventRepository,
+  ) {}
 
   // POST /events/:id/rsvp
   async toggleRsvp(req: Request, res: Response, store: AppSessionStore): Promise<void> {
@@ -50,10 +55,42 @@ if (!eventId) {
   return;
 }
 
-    // 🔑 return JSON for frontend update
-    res.json({
-      status: result.value.status,
-    });
+    const newStatus = result.value.status;
+    const isHtmx = req.get("HX-Request") === "true";
+
+    if (isHtmx) {
+      // For HTMX requests, return updated button and attendance HTML
+      const buttonText =
+        newStatus === 'going' ? 'Cancel RSVP' :
+        newStatus === 'waitlisted' ? 'Leave Waitlist' :
+        'RSVP to this event';
+
+      const buttonClass =
+        (newStatus === 'going' || newStatus === 'waitlisted')
+          ? 'bg-red-600 hover:bg-red-700'
+          : 'bg-blue-600 hover:bg-blue-700';
+
+      const response = `
+        <div id="rsvp-button-${eventId}">
+          <button
+            hx-post="/events/${eventId}/rsvp"
+            hx-trigger="click"
+            hx-target="#rsvp-button-${eventId}"
+            hx-swap="outerHTML"
+            class="px-4 py-2 rounded-lg ${buttonClass} text-white text-sm font-medium cursor-pointer transition-colors"
+          >
+            ${buttonText}
+          </button>
+        </div>
+      `;
+
+      res.send(response);
+    } else {
+      // Return JSON for non-HTMX requests
+      res.json({
+        status: newStatus,
+      });
+    }
   }
 
   // GET /my-rsvps
@@ -89,6 +126,6 @@ if (!eventId) {
   }
 }
 
-export function CreateRsvpController(service: IRsvpService): IRsvpController {
-  return new RsvpController(service);
+export function CreateRsvpController(service: IRsvpService, eventRepository: IEventRepository): IRsvpController {
+  return new RsvpController(service, eventRepository);
 }

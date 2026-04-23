@@ -1,7 +1,7 @@
 import { start } from "node:repl";
 import { Err, Ok, type Result } from "../lib/result";
 import type { IAuthenticatedUserSession } from "../session/AppSession";
-import { EventNotFound, InvalidEventDetails, type EventError } from "./errors";
+import { EventNotFound, InvalidEventDetails, Unauthorized, InvalidState, InvalidInput, type EventError } from "./errors";
 import type { IEventRecord } from "./Event";
 import type { IEventRepository } from "./EventRepository";
 
@@ -173,14 +173,14 @@ class EventService implements IEventService {
             viewer.userId === event.organizerId;
 
         if (!canEdit) {
-            return Err(EventNotFound("You cannot edit this event."));
+            return Err(Unauthorized("You cannot edit this event."));
         }
 
         if (event.status === "cancelled" || event.status === "past") {
-            return Err(EventNotFound("Past or cancelled events cannot be edited."));
+            return Err(InvalidState("Past or cancelled events cannot be edited."));
         }
         if (!updates.title.trim()) {
-            return Err(EventNotFound("Title is required."));
+            return Err(InvalidInput("Title is required."));
         }
         const updated: IEventRecord = {
             ...updates,

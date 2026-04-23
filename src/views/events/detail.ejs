@@ -130,24 +130,23 @@
     <div class="px-6 py-4 bg-slate-50 flex items-center gap-2.5 flex-wrap">
 
       <% if (canRSVP) { %>
-    <button
-    hx-post="/events/<%= event.id %>/rsvp"
-    hx-trigger="click"
-    hx-swap="none"
-    x-data="{ status: '<%= event.userRsvpStatus %>' }"
-    @htmx:afterRequest="
-      const res = JSON.parse(event.detail.xhr.response);
-      status = res.status;
-    "
-    x-text="
-      status === 'going' ? 'Cancel RSVP' :
-      status === 'waitlisted' ? 'Leave Waitlist' :
-      'RSVP to this event'
-    "
-    class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors"
-  >
-    RSVP to this event
+    <div id="rsvp-button-<%= event.id %>">
+      <button
+        hx-post="/events/<%= event.id %>/rsvp"
+        hx-trigger="click"
+        hx-target="#rsvp-button-<%= event.id %>"
+        hx-swap="outerHTML"
+        class="px-4 py-2 rounded-lg <%= event.userRsvpStatus === 'going' || event.userRsvpStatus === 'waitlisted' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700' %> text-white text-sm font-medium cursor-pointer transition-colors"
+      >
+        <% if (event.userRsvpStatus === 'going') { %>
+          Cancel RSVP
+        <% } else if (event.userRsvpStatus === 'waitlisted') { %>
+          Leave Waitlist
+        <% } else { %>
+          RSVP to this event
+        <% } %>
       </button>
+    </div>
       <% } %>
 
       <% if (canManage) { %>

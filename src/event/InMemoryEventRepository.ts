@@ -35,7 +35,7 @@ const store: IEventRecord[] = [
   },
 ];
 
-class InMemoryEventRepository implements IEventRepository {
+export class InMemoryEventRepository implements IEventRepository {
     constructor(private readonly events: IEventRecord[]) {}
 
     async create_event(event: IEventRecord): Promise<Result<IEventRecord | null, EventError>> {

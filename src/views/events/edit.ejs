@@ -4,7 +4,12 @@
     <%- include("../partials/error", { message: pageError }) %>
   <% } %>
 
-  <form method="POST" action="/events/<%= event.id %>/edit" class="space-y-4">
+  <form 
+    hx-post="/events/<%= event.id %>/edit"
+    hx-target="#edit-result"
+    hx-swap="innerHTML"
+    class="space-y-4"
+  >
     <div>
       <label class="block text-sm font-medium">Title</label>
       <input
@@ -66,4 +71,5 @@
       Cancel
     </a>
   </form>
+  <div id="edit-result" class="mt-4"></div>
 </section>
