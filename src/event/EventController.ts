@@ -1,9 +1,10 @@
 import type { Request, Response } from "express";
+import { IUserRepository } from "../auth/UserRepository";
+import type { IRsvpRepository } from "../rsvp/RepoRSVP";
 import type { ILoggingService } from "../service/LoggingService";
 import type { AppSessionStore } from "../session/AppSession";
 import { getAuthenticatedUser, recordPageView } from "../session/AppSession";
 import type { IEventService } from "./EventService";
-import type { IRsvpRepository } from "../rsvp/RepoRSVP";
 
 export interface IEventController {
     createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
@@ -19,6 +20,7 @@ class EventController implements IEventController {
         private readonly service: IEventService,
         private readonly logger: ILoggingService,
         private readonly rsvpRepository: IRsvpRepository,
+        private readonly userRepository: IUserRepository
     ) {}
 
     async createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void> {
@@ -91,12 +93,16 @@ class EventController implements IEventController {
             userRsvpStatus,
         };
 
+        const eventOrganizerInfo = await this.userRepository.findById(event.organizerId)
+        const organizerName = eventOrganizerInfo.ok ? eventOrganizerInfo.value?.displayName : null
+
         this.logger.info(`GET /events/${id} for ${session.browserLabel}`);
 
         res.render("events/detail", {
             event: eventWithRsvp,
             viewer,
             session,
+            organizerName,
             pageError: null,
         });
     }
@@ -217,6 +223,7 @@ export function CreateEventController(
     service: IEventService,
     logger: ILoggingService,
     rsvpRepository: IRsvpRepository,
+    userRepository: IUserRepository
 ): IEventController {
-    return new EventController(service, logger, rsvpRepository);
+    return new EventController(service, logger, rsvpRepository, userRepository);
 }
