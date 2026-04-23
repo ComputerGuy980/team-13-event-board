@@ -312,7 +312,7 @@ class ExpressApp implements IApp {
         await this.eventController.showEditForm(req, res, sessionStore(req));
       }),
     );
-
+    
     this.app.post(
       "/events/:id/edit",
       asyncHandler(async (req, res) => {
@@ -323,13 +323,14 @@ class ExpressApp implements IApp {
         await this.eventController.submitEdit(req, res, sessionStore(req));
       }),
     );
-
+    
     this.app.get(
-      "/events",
+      "/events/search",
       asyncHandler(async (req, res) => {
         if (!this.requireAuthenticated(req, res)) {
           return;
         }
+
         await this.eventController.showSearch(req, res, sessionStore(req));
       }),
     );
@@ -367,27 +368,27 @@ class ExpressApp implements IApp {
     );
     
     this.app.post(
-  "/events/:id/rsvp",
-  asyncHandler(async (req, res) => {
-    if (!this.requireAuthenticated(req, res)) {
-      return;
-    }
-
-    await this.rsvpController.toggleRsvp(req, res, sessionStore(req));
-  }),
-);
-
-this.app.get(
-  "/my-rsvps",
-  asyncHandler(async (req, res) => {
-    if (!this.requireAuthenticated(req, res)) {
-      return;
-    }
-
-    await this.rsvpController.showDashboard(req, res, sessionStore(req));
-  }),
-);
-
+      "/events/:id/rsvp",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+        
+        await this.rsvpController.toggleRsvp(req, res, sessionStore(req));
+      }),
+    );
+    
+    this.app.get(
+      "/my-rsvps",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+        
+        await this.rsvpController.showDashboard(req, res, sessionStore(req));
+      }),
+    );
+    
     // ── Error handler ────────────────────────────────────────────────
     
     this.app.use((err: unknown, _req: Request, res: Response, _next: (value?: unknown) => void) => {
