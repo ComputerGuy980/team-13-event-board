@@ -40,9 +40,15 @@ export class InMemoryEventRepository implements IEventRepository {
 
     async create_event(event: IEventRecord): Promise<Result<IEventRecord | null, EventError>> {
         try {
-            event.id = this.events.length;
-            this.events.push(event);
-            return Ok(event);
+            let id = this.events.length;
+            while (this.events.find(e => e.id === id)) {
+                id++;
+            }
+
+            const new_event = { ...event, id };
+
+            this.events.push(new_event);
+            return Ok(new_event);
         } catch {
             return Err(EventNotFound("Failed to create event."));
         }

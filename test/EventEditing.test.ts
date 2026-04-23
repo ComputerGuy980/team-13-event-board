@@ -1,12 +1,26 @@
-import { CreateEventService } from "../src/event/EventService";
+import { IEventRepository } from "../src/event/EventRepository";
+import { CreateEventService, IEventService } from "../src/event/EventService";
 import { CreateInMemoryEventRepository } from "../src/event/InMemoryEventRepository";
+import { IAuthenticatedUserSession } from "../src/session/AppSession";
 
 describe("Event Editing Service", () => {
-  let repo: any;
-  let service: any;
+  let repo: IEventRepository;
+  let service: IEventService;
 
-  const owner = { userId: "1", role: "user" } as any;
-  const otherUser = { userId: "2", role: "user" } as any;
+  const owner: IAuthenticatedUserSession = {
+    userId: "1",
+    role: "user",
+    email: "test1@app.test",
+    displayName: "test1",
+    signedInAt: new Date().toISOString(),
+  };
+  const otherUser: IAuthenticatedUserSession = {
+    userId: "2",
+    role: "user",
+    email: "test2@app.test",
+    displayName: "test2",
+    signedInAt: new Date().toISOString(),
+  };
 
   beforeEach(() => {
     repo = CreateInMemoryEventRepository();
@@ -29,11 +43,19 @@ describe("Event Editing Service", () => {
       updatedAt: Date.now(),
     });
 
+    expect(created.ok).toBe(true);
+    if (created.ok !== true) return;
+    expect(created.value).toBeTruthy();
+    if (!created.value) return;
+
     const result = await service.editEvent(
       created.value.id,
       { ...created.value, title: "Updated" },
       owner
     );
+
+    console.warn(result.value);
+    console.warn(created.value);
 
     expect(result.ok).toBe(true);
   });
@@ -42,7 +64,8 @@ describe("Event Editing Service", () => {
     const result = await service.editEvent(999, {} as any, owner);
 
     expect(result.ok).toBe(false);
-    expect(result.error.name).toBe("EventNotFound");
+    if (result.ok === true) return;
+    expect(result.value.name).toBe("EventNotFound");
   });
 
   it("fails if unauthorized", async () => {
@@ -61,6 +84,11 @@ describe("Event Editing Service", () => {
       updatedAt: Date.now(),
     });
 
+    expect(created.ok).toBe(true);
+    if (created.ok !== true) return;
+    expect(created.value).toBeTruthy();
+    if (!created.value) return;
+
     const result = await service.editEvent(
       created.value.id,
       created.value,
@@ -68,7 +96,8 @@ describe("Event Editing Service", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(result.error.name).toBe("Unauthorized");
+    if (result.ok !== false) return;
+    expect(result.value.name).toBe("Unauthorized");
   });
 
   it("fails if invalid input", async () => {
@@ -87,6 +116,11 @@ describe("Event Editing Service", () => {
       updatedAt: Date.now(),
     });
 
+    expect(created.ok).toBe(true);
+    if (created.ok !== true) return;
+    expect(created.value).toBeTruthy();
+    if (!created.value) return;
+
     const result = await service.editEvent(
       created.value.id,
       { ...created.value, title: "" },
@@ -94,6 +128,7 @@ describe("Event Editing Service", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(result.error.name).toBe("InvalidInput");
+    if (result.ok !== false) return;
+    expect(result.value.name).toBe("InvalidInput");
   });
 });
