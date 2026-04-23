@@ -34,7 +34,7 @@ class EventController implements IEventController {
         const result = await this.service.createEvent(req.body, viewer);
 
         if (result.ok === false) {
-            this.logger.warn("Event creation failed.");
+            this.logger.warn(`Event creation failed: ${result.value.message}`);
             res.status(404).render("partials/error", {
                 message: result.value.message,
                 layout: false
@@ -178,8 +178,6 @@ class EventController implements IEventController {
             });
             return;
         }
-
-        const session = recordPageView(store);
 
         res.render("events/edit", {
             event: result.value,
