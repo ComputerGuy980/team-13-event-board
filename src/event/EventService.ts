@@ -22,6 +22,14 @@ export interface IEventService {
         updates: IEventRecord,
         viewer: IAuthenticatedUserSession,
     ): Promise<Result<IEventRecord, EventError>>;
+    cancelEvent(
+        id: number,
+        viewer: IAuthenticatedUserSession
+    ): Promise<Result<boolean, EventError>>;
+    publishEvent(
+        id: number,
+        viewer: IAuthenticatedUserSession
+    ): Promise<Result<boolean, EventError>>;
 }
 
 class EventService implements IEventService {
@@ -77,8 +85,6 @@ class EventService implements IEventService {
 
         if (startDatetime >= endDatetime) return Err(InvalidEventDetails("New event start date after end date."));
 
-        const now = Date.now() / 1000;
-
         const new_event: IEventRecord = {
             id: 0, // value is autoincremented in repository
         
@@ -91,13 +97,13 @@ class EventService implements IEventService {
         
             capacity: capacity,
         
-            startDatetime: startDatetime.getTime() / 1000,
-            endDatetime: endDatetime.getTime() / 1000,
+            startDatetime: startDatetime.getTime(),
+            endDatetime: endDatetime.getTime(),
 
             organizerId: organizer.userId,
         
-            createdAt: now,
-            updatedAt: now
+            createdAt: Date.now(),
+            updatedAt: Date.now()
         }
 
         const result = await this.events.create_event(new_event);
@@ -197,6 +203,66 @@ class EventService implements IEventService {
         }
 
         return Ok(updated);
+    }
+
+    async cancelEvent(id: number, viewer: IAuthenticatedUserSession): Promise<Result<boolean, EventError>> {
+        const existing = await this.events.get_event(id);
+
+        if (existing.ok === false || !existing.value) {
+            return Err(EventNotFound(`Event ${id} not found.`));
+        }
+
+        const event = existing.value;
+
+        const canEdit =
+            viewer.role === "admin" ||
+            viewer.userId === event.organizerId;
+
+        if (!canEdit) {
+            return Err(EventNotFound("You cannot edit this event."));
+        }
+
+        if (event.status === "cancelled" || event.status === "past") {
+            return Err(EventNotFound("Past or cancelled events cannot be cancelled."));
+        }
+
+        const result = await this.events.set_event_status(id, "cancelled");
+
+        if (result.ok === false) {
+            return Err(EventNotFound("Failed to cancel event."));
+        }
+
+        return Ok(true);
+    }
+
+    async publishEvent(id: number, viewer: IAuthenticatedUserSession): Promise<Result<boolean, EventError>> {
+        const existing = await this.events.get_event(id);
+
+        if (existing.ok === false || !existing.value) {
+            return Err(EventNotFound(`Event ${id} not found.`));
+        }
+
+        const event = existing.value;
+
+        const canEdit =
+            viewer.role === "admin" ||
+            viewer.userId === event.organizerId;
+
+        if (!canEdit) {
+            return Err(EventNotFound("You cannot edit this event."));
+        }
+
+        if (event.status === "cancelled" || event.status === "past") {
+            return Err(EventNotFound("Past or cancelled events cannot be published."));
+        }
+
+        const result = await this.events.set_event_status(id, "published");
+
+        if (result.ok === false) {
+            return Err(EventNotFound("Failed to publish event."));
+        }
+
+        return Ok(true);
     }
 }
 

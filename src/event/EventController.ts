@@ -12,6 +12,8 @@ export interface IEventController {
     showSearch(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     submitEdit(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    cancelEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    publishEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
 }
 
 class EventController implements IEventController {
@@ -40,7 +42,7 @@ class EventController implements IEventController {
             return;
         }
     
-        this.logger.info(`GET /events/create for ${session.browserLabel}`);
+        this.logger.info(`POST /events/create for ${session.browserLabel}`);
 
         res.redirect(`/events/${result.value}`);
     }
@@ -228,6 +230,52 @@ class EventController implements IEventController {
     return;
 }
         this.logger.info(`POST /events/${id}/edit`);
+        res.redirect(`/events/${id}`);
+    }
+
+    async cancelEvent(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const id = parseInt(req.params.id as string);
+        const viewer = getAuthenticatedUser(store);
+
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
+        const result = await this.service.cancelEvent(id, viewer);
+
+        if (result.ok === false) {
+            res.status(404).render("partials/error", {
+                message: result.value.message,
+                layout: false
+            });
+            return;
+        }
+
+        this.logger.info(`POST /events/${id}/cancel`);
+        res.redirect("/events");
+    }
+
+    async publishEvent(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const id = parseInt(req.params.id as string);
+        const viewer = getAuthenticatedUser(store);
+
+        if (!viewer) {
+            res.redirect("/login");
+            return;
+        }
+
+        const result = await this.service.publishEvent(id, viewer);
+
+        if (result.ok === false) {
+            res.status(404).render("partials/error", {
+                message: result.value.message,
+                layout: false
+            });
+            return;
+        }
+
+        this.logger.info(`POST /events/${id}/publish`);
         res.redirect(`/events/${id}`);
     }
 }

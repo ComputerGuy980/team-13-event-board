@@ -150,6 +150,16 @@
       <% } %>
 
       <% if (canManage) { %>
+        
+        <% if(event.status === 'draft') { %>
+          <form method="POST" action="/events/<%= event.id %>/publish" class="m-0">
+            <button type="submit"
+              class="px-4 py-2 rounded-lg bg-white border border-blue-200 text-blue-600 text-sm font-medium cursor-pointer hover:bg-blue-50 transition-colors">
+              Publish event
+            </button>
+          </form>
+        <% } %>
+
         <a href="/events/<%= event.id %>/edit"
           class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 text-sm font-medium no-underline hover:bg-slate-50 transition-colors">
           Edit event
