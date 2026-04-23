@@ -325,6 +325,17 @@ class ExpressApp implements IApp {
     );
     
     this.app.get(
+      "/events",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        await this.eventController.showSearch(req, res, sessionStore(req));
+      }),
+    );
+
+    this.app.get(
       "/events/search",
       asyncHandler(async (req, res) => {
         if (!this.requireAuthenticated(req, res)) {
@@ -345,7 +356,7 @@ class ExpressApp implements IApp {
       }),
     );
 
-        this.app.post(
+    this.app.post(
       "/events/:id/cancel",
       asyncHandler(async (req, res) => {
         if (!this.requireAuthenticated(req, res)) {
