@@ -206,12 +206,27 @@ class EventController implements IEventController {
         }, viewer);
 
         if (result.ok === false) {
-            res.status(400).render("partials/error", {
-                message: result.value.message,
-                layout: false,
-            });
-            return;
-        }
+            let status = 400;
+
+            switch (result.value.name) {
+                case "EventNotFound":
+                    status = 404;
+                    break;
+                case "Unauthorized":
+                    status = 403;
+                    break;
+                case "InvalidState":
+                case "InvalidInput":
+                    status = 400;
+                    break;
+            }
+
+    res.status(status).render("partials/error", {
+        message: result.value.message,
+        layout: false,
+    });
+    return;
+}
         this.logger.info(`POST /events/${id}/edit`);
         res.redirect(`/events/${id}`);
     }
