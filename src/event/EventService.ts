@@ -107,8 +107,9 @@ class EventService implements IEventService {
         }
 
         const result = await this.events.create_event(new_event);
-        if (!result.ok || !result.value) return Err(InvalidEventDetails("Event creation failed."));
-
+        if (result.ok === false) return Err(InvalidEventDetails(result.value.message));
+        if (!result.value) return Err(InvalidEventDetails("Event creation failed."));
+        
         return Ok(result.value.id);
     }
 
