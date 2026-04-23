@@ -135,7 +135,7 @@ export class RsvpService implements IRsvpService {
   // ── Private helpers ───────────────────────────────────────────────────────
  
   private async countGoingAttendees(eventId: string): Promise<number> {
-    const result = await this.rsvpRepo.listUserRsvps(eventId);
+    const result = await this.rsvpRepo.listEventRsvps(eventId);
     if (!result.ok) return 0;
     return result.value.filter((r) => r.status === "going").length;
   }

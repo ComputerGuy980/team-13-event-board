@@ -12,8 +12,9 @@ export interface IRsvpController {
 
 function mapRole(role: string): "admin" | "member" | "organizer" {
   if (role === "admin") return "admin";
-  if (role === "organizer") return "organizer";
-  return "member"; // treat everything else (including "staff") as member
+  // In the current system, there's no "organizer" role - just "admin", "staff", and "user"
+  // All non-admin roles map to "member"
+  return "member";
 }
 
 function getParam(param: string | string[] | undefined): string | null {
