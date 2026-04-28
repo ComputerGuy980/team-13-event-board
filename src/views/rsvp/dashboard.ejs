@@ -5,95 +5,101 @@
   <%# Upcoming %>
   <h2 class="text-lg font-medium mb-3">Upcoming</h2>
 
-  <% if (dashboard.upcoming.length === 0) { %>
-    <p class="text-sm text-slate-400 mb-6">No upcoming RSVPs.</p>
-  <% } else { %>
-    <div class="flex flex-col gap-3 mb-8">
-      <% dashboard.upcoming.forEach(item => { %>
-        <div
-          class="bg-white border rounded-xl px-4 py-3 flex justify-between items-center"
-          id="rsvp-<%= item.rsvp.id %>"
-        >
+  <div id="upcoming-section">
+    <% if (dashboard.upcoming.length === 0) { %>
+      <p class="text-sm text-slate-400 mb-6">No upcoming RSVPs.</p>
+    <% } else { %>
+      <div class="flex flex-col gap-3 mb-8">
+        <% dashboard.upcoming.forEach(item => { %>
+          <div
+            class="bg-white border rounded-xl px-4 py-3 flex justify-between items-center"
+            id="rsvp-<%= item.rsvp.id %>"
+          >
 
-          <div>
+            <div>
+              <p class="font-medium"><%= item.event.title %></p>
+              <p class="text-xs text-slate-400">
+                <%= new Date(item.event.startDatetime).toLocaleDateString() %>
+              </p>
+              <p class="text-xs">
+                Status: <span id="status-<%= item.rsvp.id %>"><%= item.rsvp.status %></span>
+              </p>
+            </div>
+
+            <button
+              hx-post="/events/<%= item.event.id %>/rsvp?from=dashboard"
+              hx-trigger="click"
+              hx-swap="none"
+              hx-confirm="Are you sure you want to cancel this RSVP?"
+              class="text-sm px-3 py-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+              data-rsvp-id="<%= item.rsvp.id %>"
+            >
+              Cancel
+            </button>
+
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <%# No Longer RSVP'd %>
+  <h2 class="text-lg font-medium mb-3">No Longer RSVP'd</h2>
+
+  <div id="no-longer-rsvpd-section">
+    <% if (dashboard.noLongerRSVPd.length === 0) { %>
+      <p class="text-sm text-slate-400 mb-6">You're still RSVP'd to all upcoming events.</p>
+    <% } else { %>
+      <div class="flex flex-col gap-3 mb-8">
+        <% dashboard.noLongerRSVPd.forEach(item => { %>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex justify-between items-center" id="rsvp-<%= item.rsvp.id %>">
+            <div>
+              <p class="font-medium text-amber-900"><%= item.event.title %></p>
+              <p class="text-xs text-amber-600">
+                <%= new Date(item.event.startDatetime).toLocaleDateString() %>
+              </p>
+              <p class="text-xs text-amber-700">
+                Status: <%= item.rsvp.status %>
+              </p>
+            </div>
+
+            <button
+              hx-post="/events/<%= item.event.id %>/rsvp?from=dashboard"
+              hx-trigger="click"
+              hx-swap="none"
+              class="text-sm px-3 py-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+              data-rsvp-id="<%= item.rsvp.id %>"
+            >
+              RSVP Again
+            </button>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <%# Cancelled / Past %>
+  <h2 class="text-lg font-medium mb-3">Cancelled / Past Events</h2>
+
+  <div id="cancelled-section">
+    <% if (dashboard.cancelled.length === 0) { %>
+      <p class="text-sm text-slate-400">No cancelled or past RSVPs.</p>
+    <% } else { %>
+      <div class="flex flex-col gap-3">
+        <% dashboard.cancelled.forEach(item => { %>
+          <div class="bg-slate-50 border rounded-xl px-4 py-3">
             <p class="font-medium"><%= item.event.title %></p>
             <p class="text-xs text-slate-400">
               <%= new Date(item.event.startDatetime).toLocaleDateString() %>
             </p>
             <p class="text-xs">
-              Status: <span id="status-<%= item.rsvp.id %>"><%= item.rsvp.status %></span>
+              Status: <%= item.rsvp.status %> <% if (item.event.status === 'cancelled') { %>(event cancelled)<% } %>
             </p>
           </div>
-
-          <button
-            hx-post="/events/<%= item.event.id %>/rsvp"
-            hx-trigger="click"
-            hx-swap="none"
-            hx-confirm="Are you sure you want to cancel this RSVP?"
-            class="text-sm px-3 py-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-            data-rsvp-id="<%= item.rsvp.id %>"
-          >
-            Cancel
-          </button>
-
-        </div>
-      <% }) %>
-    </div>
-  <% } %>
-
-  <%# No Longer RSVP'd %>
-  <h2 class="text-lg font-medium mb-3">No Longer RSVP'd</h2>
-
-  <% if (dashboard.noLongerRSVPd.length === 0) { %>
-    <p class="text-sm text-slate-400 mb-6">You're still RSVP'd to all upcoming events.</p>
-  <% } else { %>
-    <div class="flex flex-col gap-3 mb-8">
-      <% dashboard.noLongerRSVPd.forEach(item => { %>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex justify-between items-center">
-          <div>
-            <p class="font-medium text-amber-900"><%= item.event.title %></p>
-            <p class="text-xs text-amber-600">
-              <%= new Date(item.event.startDatetime).toLocaleDateString() %>
-            </p>
-            <p class="text-xs text-amber-700">
-              Status: <%= item.rsvp.status %>
-            </p>
-          </div>
-
-          <button
-            hx-post="/events/<%= item.event.id %>/rsvp"
-            hx-trigger="click"
-            hx-swap="none"
-            class="text-sm px-3 py-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-            data-rsvp-id="<%= item.rsvp.id %>"
-          >
-            RSVP Again
-          </button>
-        </div>
-      <% }) %>
-    </div>
-  <% } %>
-
-  <%# Cancelled / Past %>
-  <h2 class="text-lg font-medium mb-3">Cancelled / Past Events</h2>
-
-  <% if (dashboard.cancelled.length === 0) { %>
-    <p class="text-sm text-slate-400">No cancelled or past RSVPs.</p>
-  <% } else { %>
-    <div class="flex flex-col gap-3">
-      <% dashboard.cancelled.forEach(item => { %>
-        <div class="bg-slate-50 border rounded-xl px-4 py-3">
-          <p class="font-medium"><%= item.event.title %></p>
-          <p class="text-xs text-slate-400">
-            <%= new Date(item.event.startDatetime).toLocaleDateString() %>
-          </p>
-          <p class="text-xs">
-            Status: <%= item.rsvp.status %> <% if (item.event.status === 'cancelled') { %>(event cancelled)<% } %>
-          </p>
-        </div>
-      <% }) %>
-    </div>
-  <% } %>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
 
 </div>
 
