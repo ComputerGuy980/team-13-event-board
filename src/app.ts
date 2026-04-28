@@ -11,6 +11,7 @@ import type { UserRole } from "./auth/User";
 import { IApp } from "./contracts";
 import { IEventController } from "./event/EventController";
 import { IEventService } from "./event/EventService";
+import { IRsvpController } from "./rsvp/RsvpController";
 import { ILoggingService } from "./service/LoggingService";
 import {
   AppSessionStore,
@@ -19,7 +20,6 @@ import {
   recordPageView,
   touchAppSession,
 } from "./session/AppSession";
-import { IRsvpController } from "./rsvp/RsvpController";
 
 type AsyncRequestHandler = RequestHandler;
 
