@@ -388,6 +388,13 @@ class ExpressApp implements IApp {
         await this.rsvpController.toggleRsvp(req, res, sessionStore(req));
       }),
     );
+
+    this.app.get(
+      "/events/:id/attendance",
+      asyncHandler(async (req, res) => {
+        await this.rsvpController.getAttendance(req, res);
+      }),
+    );
     
     this.app.get(
       "/my-rsvps",
