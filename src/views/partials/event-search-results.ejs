@@ -1,0 +1,13 @@
+<% if (!events || events.length === 0) { %>
+  <p class="text-slate-500">No matching events found. Try another search.</p>
+<% } else { %>
+  <ul class="space-y-3">
+    <% events.forEach((event) => { %>
+      <li class="p-4 border border-slate-200 rounded-xl">
+        <h3 class="font-semibold text-slate-900"><%= event.title %></h3>
+        <p class="text-slate-500"><%= event.location %></p>
+        <p class="text-sm text-slate-400"><%= event.description %></p>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
