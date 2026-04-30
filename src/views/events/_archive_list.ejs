@@ -1,0 +1,38 @@
+<% if (events.length === 0) { %>
+  <div class="text-center py-16">
+    <p class="text-sm font-medium text-slate-500">No past events found.</p>
+    <p class="text-sm text-slate-400 mt-1">Try a different category or check back later.</p>
+  </div>
+<% } else { %>
+  <div class="flex flex-col gap-3">
+    <% events.forEach(event => { %>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <a href="/events/<%= event.id %>" class="block px-5 py-4 no-underline group">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                <%= event.title %>
+              </p>
+              <p class="text-xs text-slate-400 mt-0.5">
+                <%= new Date(event.startDatetime).toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'long', year: 'numeric'
+                }) %>
+                &middot; <%= event.location %>
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                <%= event.category %>
+              </span>
+              <% if (event.capacity) { %>
+                <span class="text-xs text-slate-400"><%= event.rsvpCount %>/<%= event.capacity %></span>
+              <% } else { %>
+                <span class="text-xs text-slate-400"><%= event.rsvpCount %> attended</span>
+              <% } %>
+            </div>
+          </div>
+        </a>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
