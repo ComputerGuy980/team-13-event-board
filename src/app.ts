@@ -11,6 +11,7 @@ import type { UserRole } from "./auth/User";
 import { IApp } from "./contracts";
 import { IEventController } from "./event/EventController";
 import { IEventService } from "./event/EventService";
+import { IRsvpController } from "./rsvp/RsvpController";
 import { ILoggingService } from "./service/LoggingService";
 import {
   AppSessionStore,
@@ -19,7 +20,6 @@ import {
   recordPageView,
   touchAppSession,
 } from "./session/AppSession";
-import { IRsvpController } from "./rsvp/RsvpController";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -325,6 +325,17 @@ class ExpressApp implements IApp {
     );
     
     this.app.get(
+      "/events",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        await this.eventController.showSearch(req, res, sessionStore(req));
+      }),
+    );
+
+    this.app.get(
       "/events/search",
       asyncHandler(async (req, res) => {
         if (!this.requireAuthenticated(req, res)) {
@@ -375,6 +386,13 @@ class ExpressApp implements IApp {
         }
         
         await this.rsvpController.toggleRsvp(req, res, sessionStore(req));
+      }),
+    );
+
+    this.app.get(
+      "/events/:id/attendance",
+      asyncHandler(async (req, res) => {
+        await this.rsvpController.getAttendance(req, res);
       }),
     );
     

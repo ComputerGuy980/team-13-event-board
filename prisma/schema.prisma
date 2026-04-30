@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  url = "file:./dev.db"
 }
 
 model RSVP {
@@ -16,4 +17,19 @@ model RSVP {
   @@unique([eventId, userId])
   @@index([userId])
   @@index([eventId])
+}
+
+model Event {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String
+  location      String
+  category      String
+  status        String   @default("draft")
+  capacity      Int
+  startDatetime Int
+  endDatetime   Int
+  organizerId   String
+  createdAt     Int
+  updatedAt     Int
 }
