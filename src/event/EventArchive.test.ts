@@ -133,3 +133,79 @@ describe("EventService.transitionExpiredEvents", () => {
     }
   });
 });
+
+
+
+describe("EventService.getArchivedEvents", () => {
+  it("returns only events with status past", async () => {
+    const seed = [
+      makePast(1),
+      makePublished(2),
+      makeExpired(3), // still published — not yet transitioned
+    ];
+    const { service } = makeService(seed);
+ 
+    const result = await service.getArchivedEvents();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.every(e => e.status === "past")).toBe(true);
+      expect(result.value.length).toBe(1);
+    }
+  });
+ 
+  it("returns events in reverse chronological order by endDatetime", async () => {
+    const oldest = makePast(1, { endDatetime: now - 10 * 86400000 });
+    const middle = makePast(2, { endDatetime: now - 5 * 86400000 });
+    const newest = makePast(3, { endDatetime: now - 1 * 86400000 });
+ 
+    // Insert out of order intentionally
+    const { service } = makeService([oldest, newest, middle]);
+ 
+    const result = await service.getArchivedEvents();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const ids = result.value.map(e => e.id);
+      expect(ids).toEqual([3, 2, 1]); // newest first
+    }
+  });
+ 
+  it("returns an empty array when there are no past events", async () => {
+    const { service } = makeService([makePublished(1)]);
+ 
+    const result = await service.getArchivedEvents();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toHaveLength(0);
+    }
+  });
+ 
+  it("returns all past events when the repository contains only past events", async () => {
+    const seed = [makePast(1), makePast(2), makePast(3)];
+    const { service } = makeService(seed);
+ 
+    const result = await service.getArchivedEvents();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toHaveLength(3);
+    }
+  });
+ 
+  it("reflects events that were just transitioned by transitionExpiredEvents", async () => {
+    const expired = makeExpired(1);
+    const { service } = makeService([expired]);
+ 
+    // Archive should be empty before transition
+    const before = await service.getArchivedEvents();
+    expect(before.ok && before.value.length).toBe(0);
+ 
+    await service.transitionExpiredEvents();
+ 
+    // Archive should contain the now-transitioned event
+    const after = await service.getArchivedEvents();
+    expect(after.ok).toBe(true);
+    if (after.ok) {
+      expect(after.value).toHaveLength(1);
+      expect(after.value[0].id).toBe(1);
+    }
+  });
+});
