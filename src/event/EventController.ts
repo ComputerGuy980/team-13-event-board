@@ -10,6 +10,7 @@ export interface IEventController {
     createNewEvent(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showEventDetail(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showArchive(req: Request, res: Response, store: AppSessionStore): Promise<void>;
+    showArchiveFilter(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showSearch(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     showEditForm(req: Request, res: Response, store: AppSessionStore): Promise<void>;
     submitEdit(req: Request, res: Response, store: AppSessionStore): Promise<void>;
@@ -130,6 +131,32 @@ class EventController implements IEventController {
             pageError: null,
         });
     }
+
+    async showArchiveFilter(req: Request, res: Response, store: AppSessionStore): Promise<void> {
+        const category = typeof req.query.category === "string" ? req.query.category : "all";
+
+        const result = await this.service.getArchivedEvents();
+
+        if (result.ok === false) {
+            this.logger.warn("Failed to load event archive filter");
+            res.status(500).render("partials/error", {
+                message: result.value.message,
+                layout: false,
+            });
+            return;
+        }
+
+        const events = category === "all"
+            ? result.value
+            : result.value.filter(e => e.category === category);
+
+        res.render("events/_archive_list", {
+            events,
+            pageError: null,
+            layout: false,
+        });
+    }
+
 
     async showSearch(req: Request, res: Response, store: AppSessionStore): Promise<void> {
         const viewer = getAuthenticatedUser(store);
