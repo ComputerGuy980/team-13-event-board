@@ -1,28 +1,27 @@
 <div class="max-w-2xl mx-auto py-6">
 
-  <h1 class="text-2xl font-semibold mb-6">My RSVPs</h1>
+  <h1 class="text-2xl font-semibold mb-6 text-slate-900 dark:text-slate-50">My RSVPs</h1>
 
   <%# Upcoming %>
-  <h2 class="text-lg font-medium mb-3">Upcoming</h2>
+  <h2 class="text-lg font-medium mb-3 text-slate-800 dark:text-slate-200">Upcoming</h2>
 
   <div id="upcoming-section">
     <% if (dashboard.upcoming.length === 0) { %>
-      <p class="text-sm text-slate-400 mb-6">No upcoming RSVPs.</p>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mb-6">No upcoming RSVPs.</p>
     <% } else { %>
       <div class="flex flex-col gap-3 mb-8">
         <% dashboard.upcoming.forEach(item => { %>
           <div
-            class="bg-white border rounded-xl px-4 py-3 flex justify-between items-center"
+            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 flex justify-between items-center hover:border-indigo-200 dark:hover:border-indigo-700 transition-colors"
             id="rsvp-<%= item.rsvp.id %>"
           >
-
             <div>
-              <p class="font-medium"><%= item.event.title %></p>
-              <p class="text-xs text-slate-400">
+              <p class="font-medium text-slate-900 dark:text-slate-100"><%= item.event.title %></p>
+              <p class="text-xs text-slate-400 dark:text-slate-500">
                 <%= new Date(item.event.startDatetime).toLocaleDateString() %>
               </p>
-              <p class="text-xs">
-                Status: <span id="status-<%= item.rsvp.id %>"><%= item.rsvp.status %></span>
+              <p class="text-xs text-slate-600 dark:text-slate-400">
+                Status: <span id="status-<%= item.rsvp.id %>" class="font-medium text-indigo-600 dark:text-indigo-400"><%= item.rsvp.status %></span>
               </p>
             </div>
 
@@ -31,7 +30,7 @@
               hx-trigger="click"
               hx-swap="none"
               hx-confirm="Are you sure you want to cancel this RSVP?"
-              class="text-sm px-3 py-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+              class="text-sm px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors"
               data-rsvp-id="<%= item.rsvp.id %>"
             >
               Cancel
@@ -44,21 +43,21 @@
   </div>
 
   <%# No Longer RSVP'd %>
-  <h2 class="text-lg font-medium mb-3">No Longer RSVP'd</h2>
+  <h2 class="text-lg font-medium mb-3 text-slate-800 dark:text-slate-200">No Longer RSVP'd</h2>
 
   <div id="no-longer-rsvpd-section">
     <% if (dashboard.noLongerRSVPd.length === 0) { %>
-      <p class="text-sm text-slate-400 mb-6">You're still RSVP'd to all upcoming events.</p>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mb-6">You're still RSVP'd to all upcoming events.</p>
     <% } else { %>
       <div class="flex flex-col gap-3 mb-8">
         <% dashboard.noLongerRSVPd.forEach(item => { %>
-          <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex justify-between items-center" id="rsvp-<%= item.rsvp.id %>">
+          <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-xl px-4 py-3 flex justify-between items-center" id="rsvp-<%= item.rsvp.id %>">
             <div>
-              <p class="font-medium text-amber-900"><%= item.event.title %></p>
-              <p class="text-xs text-amber-600">
+              <p class="font-medium text-amber-900 dark:text-amber-200"><%= item.event.title %></p>
+              <p class="text-xs text-amber-600 dark:text-amber-500">
                 <%= new Date(item.event.startDatetime).toLocaleDateString() %>
               </p>
-              <p class="text-xs text-amber-700">
+              <p class="text-xs text-amber-700 dark:text-amber-400">
                 Status: <%= item.rsvp.status %>
               </p>
             </div>
@@ -67,7 +66,7 @@
               hx-post="/events/<%= item.event.id %>/rsvp?from=dashboard"
               hx-trigger="click"
               hx-swap="none"
-              class="text-sm px-3 py-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+              class="text-sm px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/60 transition-colors"
               data-rsvp-id="<%= item.rsvp.id %>"
             >
               RSVP Again
@@ -79,21 +78,21 @@
   </div>
 
   <%# Cancelled / Past %>
-  <h2 class="text-lg font-medium mb-3">Cancelled / Past Events</h2>
+  <h2 class="text-lg font-medium mb-3 text-slate-800 dark:text-slate-200">Cancelled / Past Events</h2>
 
   <div id="cancelled-section">
     <% if (dashboard.cancelled.length === 0) { %>
-      <p class="text-sm text-slate-400">No cancelled or past RSVPs.</p>
+      <p class="text-sm text-slate-400 dark:text-slate-500">No cancelled or past RSVPs.</p>
     <% } else { %>
       <div class="flex flex-col gap-3">
         <% dashboard.cancelled.forEach(item => { %>
-          <div class="bg-slate-50 border rounded-xl px-4 py-3">
-            <p class="font-medium"><%= item.event.title %></p>
-            <p class="text-xs text-slate-400">
+          <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3">
+            <p class="font-medium text-slate-700 dark:text-slate-300"><%= item.event.title %></p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">
               <%= new Date(item.event.startDatetime).toLocaleDateString() %>
             </p>
-            <p class="text-xs">
-              Status: <%= item.rsvp.status %> <% if (item.event.status === 'cancelled') { %>(event cancelled)<% } %>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Status: <%= item.rsvp.status %> <% if (item.event.status === 'cancelled') { %><span class="text-red-500 dark:text-red-400">(event cancelled)</span><% } %>
             </p>
           </div>
         <% }) %>
@@ -104,25 +103,19 @@
 </div>
 
 <script>
-  // Handle RSVP toggle completion
   document.addEventListener('htmx:afterRequest', function(evt) {
     if (evt.detail.xhr.status === 200) {
       const button = evt.detail.elt;
       const rsvpId = button.getAttribute('data-rsvp-id');
-      const container = document.getElementById('rsvp-' + rsvpId);
 
       try {
         const response = JSON.parse(evt.detail.xhr.response);
         const newStatus = response.status;
 
-        // Update status text if on same page
         const statusEl = document.getElementById('status-' + rsvpId);
         if (statusEl) {
           statusEl.textContent = newStatus;
         }
-
-        // Optionally trigger a refresh to reorganize sections
-        // Or you could manually move the element to the correct section
       } catch(e) {
         console.error('Failed to parse RSVP response', e);
       }

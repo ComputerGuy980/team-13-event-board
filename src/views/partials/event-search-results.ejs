@@ -1,12 +1,14 @@
 <% if (!events || events.length === 0) { %>
-  <p class="text-slate-500">No matching events found. Try another search.</p>
+  <p class="text-slate-500 dark:text-slate-400">No matching events found. Try another search.</p>
 <% } else { %>
   <ul class="space-y-3">
     <% events.forEach((event) => { %>
-      <li class="p-4 border border-slate-200 rounded-xl">
-        <h3 class="font-semibold text-slate-900"><%= event.title %></h3>
-        <p class="text-slate-500"><%= event.location %></p>
-        <p class="text-sm text-slate-400"><%= event.description %></p>
+      <li class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:border-indigo-200 dark:hover:border-indigo-700 transition-colors">
+        <a href="/events/<%= event.id %>" class="no-underline group">
+          <h3 class="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"><%= event.title %></h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-0.5"><%= event.location %></p>
+          <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5"><%= event.description %></p>
+        </a>
       </li>
     <% }) %>
   </ul>

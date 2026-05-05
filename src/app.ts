@@ -64,6 +64,12 @@ class ExpressApp implements IApp {
         },
       }),
     );
+    this.app.use((req, _res, next) => {
+      const cookie = req.headers.cookie ?? "";
+      const match = cookie.match(/darkMode=([^;]+)/);
+      _res.locals.darkMode = match?.[1] === "true";
+      next();
+    });
     this.app.use(Layouts);
     this.app.use(express.urlencoded({ extended: true }));
   }
