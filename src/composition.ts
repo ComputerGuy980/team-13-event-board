@@ -1,3 +1,5 @@
+import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { CreateApp } from "./app";
 import { CreateAdminUserService } from "./auth/AdminUserService";
 import { CreateAuthController } from "./auth/AuthController";
@@ -7,10 +9,11 @@ import { CreatePasswordHasher } from "./auth/PasswordHasher";
 import type { IApp } from "./contracts";
 import { CreateEventController } from "./event/EventController";
 import { CreateEventService } from './event/EventService';
-import { CreateInMemoryEventRepository } from "./event/InMemoryEventRepository";
+import { CreatePrismaEventRepository } from "./event/PrismaEventRepository";
 import { InMemoryRsvpRepository } from "./rsvp/InMemoryRepoRSVP";
 import { CreateRsvpController } from "./rsvp/RsvpController";
 import { RsvpService } from "./rsvp/ServiceRSVP";
+import { PrismaRsvpRepository } from "./rsvp/PrismaRepoRSVP";
 import type { ILoggingService } from "./service/LoggingService";
 import { CreateLoggingService } from "./service/LoggingService";
 
@@ -24,12 +27,19 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const adminUserService = CreateAdminUserService(authUsers, passwordHasher);
   const authController = CreateAuthController(authService, adminUserService, resolvedLogger);
 
+  const dbUrl = process.env.DATABASE_URL || "file:./prisma/dev.db";
+  const prisma = new PrismaClient({
+    adapter: new PrismaBetterSqlite3({
+      url: dbUrl,
+    }),
+  });
+  
   // Event wiring
-  const eventRepository = CreateInMemoryEventRepository();
+  const eventRepository = CreatePrismaEventRepository(prisma);
   const eventService = CreateEventService(eventRepository);
 
-  // RSVP wiring
-  const rsvpRepository = new InMemoryRsvpRepository();
+  // RSVP wiring - using Prisma for persistence
+  const rsvpRepository = new PrismaRsvpRepository(prisma);
   const rsvpService = new RsvpService(rsvpRepository, eventRepository);
   const rsvpController = CreateRsvpController(rsvpService, eventRepository, rsvpRepository);
 

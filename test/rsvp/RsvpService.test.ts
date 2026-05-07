@@ -168,6 +168,27 @@ describe("RsvpService", () => {
     }
   });
 
+  it("moves active RSVPs to cancelled section when event is cancelled", async () => {
+    const now = Date.now();
+    const events: IEventRecord[] = [
+      createEvent({ id: 1, startDatetime: now + 100_000, endDatetime: now + 200_000, status: "cancelled" }),
+      createEvent({ id: 2, startDatetime: now + 300_000, endDatetime: now + 400_000, status: "published" }),
+    ];
+
+    const rsvpRepo = new InMemoryRsvpRepository();
+    await rsvpRepo.create("member-1", "1", "going");
+    await rsvpRepo.create("member-1", "2", "going");
+
+    const service = new RsvpService(rsvpRepo, new InMemoryEventRepository(events));
+    const dashboard = await service.getDashboard("member-1", "member");
+
+    expect(dashboard.ok).toBe(true);
+    if (dashboard.ok) {
+      expect(dashboard.value.upcoming.map((item) => item.event.id)).toEqual([2]);
+      expect(dashboard.value.cancelled.map((item) => item.event.id)).toEqual([1]);
+    }
+  });
+
   it("denies organizer access to the RSVPs dashboard", async () => {
     const eventRepo = new InMemoryEventRepository([createEvent({ id: 1 })]);
     const service = new RsvpService(new InMemoryRsvpRepository(), eventRepo);
@@ -176,6 +197,86 @@ describe("RsvpService", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.value.name).toBe("AccessDenied");
+    }
+  });
+
+  it("promotes the oldest waitlisted attendee when a 'going' attendee cancels", async () => {
+    const eventRepo = new InMemoryEventRepository([createEvent({ id: 1, capacity: 2 })]);
+    const rsvpRepo = new InMemoryRsvpRepository();
+    const service = new RsvpService(rsvpRepo, eventRepo);
+
+    // Set up: 2 going, 2 waitlisted
+    await service.toggleRsvp("member-a", "member", "1"); // going
+    await service.toggleRsvp("member-b", "member", "1"); // going
+    // Add a small delay to ensure createdAt differs for waitlisted members
+    const member_c_rsvp = await service.toggleRsvp("member-c", "member", "1"); // waitlisted
+    await new Promise((resolve) => setTimeout(resolve, 10)); // Small delay
+    const member_d_rsvp = await service.toggleRsvp("member-d", "member", "1"); // waitlisted
+
+    // Verify initial state
+    expect(member_c_rsvp.ok).toBe(true);
+    if (member_c_rsvp.ok) {
+      expect(member_c_rsvp.value.status).toBe("waitlisted");
+    }
+    expect(member_d_rsvp.ok).toBe(true);
+    if (member_d_rsvp.ok) {
+      expect(member_d_rsvp.value.status).toBe("waitlisted");
+    }
+
+    // Member A (going) cancels
+    const cancelResult = await service.toggleRsvp("member-a", "member", "1");
+    expect(cancelResult.ok).toBe(true);
+    if (cancelResult.ok) {
+      expect(cancelResult.value.status).toBe("cancelled");
+    }
+
+    // Verify that member-c (oldest waitlisted) was promoted to going
+    const allRsvps = await rsvpRepo.listEventRsvps("1");
+    expect(allRsvps.ok).toBe(true);
+    if (allRsvps.ok) {
+      const memberCRsvp = allRsvps.value.find((r) => r.userId === "member-c");
+      const memberDRsvp = allRsvps.value.find((r) => r.userId === "member-d");
+      expect(memberCRsvp?.status).toBe("going");
+      expect(memberDRsvp?.status).toBe("waitlisted");
+    }
+  });
+
+  it("does not promote anyone when a 'waitlisted' attendee cancels", async () => {
+    const eventRepo = new InMemoryEventRepository([createEvent({ id: 1, capacity: 1 })]);
+    const rsvpRepo = new InMemoryRsvpRepository();
+    const service = new RsvpService(rsvpRepo, eventRepo);
+
+    // Set up: 1 going, 2 waitlisted
+    await service.toggleRsvp("member-a", "member", "1"); // going
+    const member_b_rsvp = await service.toggleRsvp("member-b", "member", "1"); // waitlisted
+    await new Promise((resolve) => setTimeout(resolve, 10)); // Small delay
+    const member_c_rsvp = await service.toggleRsvp("member-c", "member", "1"); // waitlisted
+
+    // Verify initial state
+    expect(member_b_rsvp.ok).toBe(true);
+    if (member_b_rsvp.ok) {
+      expect(member_b_rsvp.value.status).toBe("waitlisted");
+    }
+    expect(member_c_rsvp.ok).toBe(true);
+    if (member_c_rsvp.ok) {
+      expect(member_c_rsvp.value.status).toBe("waitlisted");
+    }
+
+    // Member B (waitlisted) cancels
+    const cancelResult = await service.toggleRsvp("member-b", "member", "1");
+    expect(cancelResult.ok).toBe(true);
+    if (cancelResult.ok) {
+      expect(cancelResult.value.status).toBe("cancelled");
+    }
+
+    // Verify that member-c remains waitlisted (no promotion since member-b was waitlisted)
+    const allRsvps = await rsvpRepo.listEventRsvps("1");
+    expect(allRsvps.ok).toBe(true);
+    if (allRsvps.ok) {
+      const memberAStatus = allRsvps.value.find((r) => r.userId === "member-a")?.status;
+      const memberCStatus = allRsvps.value.find((r) => r.userId === "member-c")?.status;
+      expect(memberAStatus).toBe("going");
+      expect(memberCStatus).toBe("waitlisted");
     }
   });
 });

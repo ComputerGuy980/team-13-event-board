@@ -61,6 +61,15 @@ export class RsvpService implements IRsvpService {
     if (existing.status === "going" || existing.status === "waitlisted") {
       const updated = await this.rsvpRepo.toggleRsvpStatus(existing.id, "cancelled");
       if (!updated.ok) return Err(RSVPNotFound(`Could not cancel RSVP ${existing.id}.`));
+
+      // If a "going" attendee cancelled, promote the oldest waitlisted attendee
+      if (existing.status === "going") {
+        const nextWaitlisted = await this.getFirstWaitlistedRsvp(eventId);
+        if (nextWaitlisted) {
+          await this.rsvpRepo.toggleRsvpStatus(nextWaitlisted.id, "going");
+        }
+      }
+
       return Ok(updated.value);
     }
  
@@ -108,14 +117,18 @@ export class RsvpService implements IRsvpService {
       const event = eventResult.value;
       const isActive = rsvp.status === "going" || rsvp.status === "waitlisted";
       const isFuture = event.endDatetime > now;
+      const isEventCancelled = event.status === "cancelled";
 
-      if (isActive && isFuture) {
+      if (isEventCancelled) {
+        // Event was cancelled - show in cancelled section regardless of RSVP status
+        cancelled.push({ rsvp, event });
+      } else if (isActive && isFuture) {
         upcoming.push({ rsvp, event });
       } else if (rsvp.status === "cancelled" && isFuture) {
         // User cancelled, but event hasn't happened yet
         noLongerRSVPd.push({ rsvp, event });
       } else {
-        // Event was cancelled OR event is in the past
+        // Event is in the past
         cancelled.push({ rsvp, event });
       }
     }
@@ -138,6 +151,17 @@ export class RsvpService implements IRsvpService {
     const result = await this.rsvpRepo.listEventRsvps(eventId);
     if (!result.ok) return 0;
     return result.value.filter((r) => r.status === "going").length;
+  }
+
+  private async getFirstWaitlistedRsvp(eventId: string): Promise<RSVP | undefined> {
+    const result = await this.rsvpRepo.listEventRsvps(eventId);
+    if (!result.ok) return undefined;
+
+    const waitlisted = result.value
+      .filter((r) => r.status === "waitlisted")
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+    return waitlisted[0];
   }
 }
  

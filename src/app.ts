@@ -284,6 +284,16 @@ class ExpressApp implements IApp {
         await this.eventController.showArchive(req, res, sessionStore(req));
       }),
     );
+
+    this.app.get(
+      "/events/archive/filter",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+        await this.eventController.showArchiveFilter(req, res, sessionStore(req));
+      }),
+    );
     
     this.app.get(
       "/events/new",
