@@ -168,6 +168,27 @@ describe("RsvpService", () => {
     }
   });
 
+  it("moves active RSVPs to cancelled section when event is cancelled", async () => {
+    const now = Date.now();
+    const events: IEventRecord[] = [
+      createEvent({ id: 1, startDatetime: now + 100_000, endDatetime: now + 200_000, status: "cancelled" }),
+      createEvent({ id: 2, startDatetime: now + 300_000, endDatetime: now + 400_000, status: "published" }),
+    ];
+
+    const rsvpRepo = new InMemoryRsvpRepository();
+    await rsvpRepo.create("member-1", "1", "going");
+    await rsvpRepo.create("member-1", "2", "going");
+
+    const service = new RsvpService(rsvpRepo, new InMemoryEventRepository(events));
+    const dashboard = await service.getDashboard("member-1", "member");
+
+    expect(dashboard.ok).toBe(true);
+    if (dashboard.ok) {
+      expect(dashboard.value.upcoming.map((item) => item.event.id)).toEqual([2]);
+      expect(dashboard.value.cancelled.map((item) => item.event.id)).toEqual([1]);
+    }
+  });
+
   it("denies organizer access to the RSVPs dashboard", async () => {
     const eventRepo = new InMemoryEventRepository([createEvent({ id: 1 })]);
     const service = new RsvpService(new InMemoryRsvpRepository(), eventRepo);
