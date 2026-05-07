@@ -1,61 +1,69 @@
 <div class="max-w-2xl mx-auto py-6">
-    <%# Back link %>
-    <a href="/events" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 no-underline mb-6">
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 11L5 7l4-4"/>
-        </svg>
-        All events
-    </a>
-    
-    <%# Main card %>
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <%# Header %>
-        <div class="px-6 pt-6 pb-5 border-b border-slate-100">
-            <h1 class="text-2xl font-semibold text-slate-900 leading-snug">New Event</h1>
-        </div>
-        
-        <%# Form Body %>
-        <form action="/events/create" method="post">
-            <div class="grid grid-cols-3 divide-x divide-y divide-slate-100 border-b border-slate-100">
-                <div class="col-span-3 flex flex-col px-5 py-4">
-                    <label for="title" class="text-sm text-slate-400 tracking-wide font-medium mb-1">Event Title</label>
-                    <input type="text" name="title" required class="px-2 py-3 rounded-sm border border-slate-400" />
-                </div>
-                
-                <div class="col-span-3 flex flex-col px-5 py-4">
-                    <label for="description" class="text-sm text-slate-400 tracking-wide font-medium mb-1">Event Description</label>
-                    <textarea name="description" rows="2" required class="px-2 py-3 rounded-sm border border-slate-400"></textarea>
-                </div>
-                
-                <div class="col-span-3 flex flex-col px-5 py-4">
-                    <label for="location" class="text-sm text-slate-400 tracking-wide font-medium mb-1">Event Location</label>
-                    <input type="text" name="location" required class="px-2 py-3 rounded-sm border border-slate-400" />
-                </div>
-                
-                <div class="col-span-3 flex flex-col px-5 py-4">
-                    <label for="category" class="text-sm text-slate-400 tracking-wide font-medium mb-1">Event Category</label>
-                    <input type="text" name="category" required class="px-2 py-3 rounded-sm border border-slate-400" />
-                </div>
-                
-                <div class="flex flex-col px-5 py-4">
-                    <label for="capacity" class="text-sm text-slate-400 tracking-wide font-medium mb-1">Attendee Limit</label>
-                    <input type="number" name="capacity" value="1" min="1" step="1" required class="px-2 py-3 rounded-sm border border-slate-400" />
-                </div>
-                
-                <div class="flex flex-col px-5 py-4">
-                    <label for="start_date" class="text-sm text-slate-400 tracking-wide font-medium mb-1">Start Time</label>
-                    <input type="datetime-local" name="start_date" required class="px-2 py-3 rounded-sm border border-slate-400" />
-                </div>
-                
-                <div class="flex flex-col px-5 py-4">
-                    <label for="end_date" class="text-sm text-slate-400 tracking-wide font-medium mb-1">End Time</label>
-                    <input type="datetime-local" name="end_date" required class="px-2 py-3 rounded-sm border border-slate-400" />
-                </div>
-                
-                <div class="col-span-3 px-6 py-4 bg-slate-50 flex items-center gap-2.5 flex-wrap">
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium cursor-pointer hover:bg-blue-700 transition-colors">Create Event</button>
-                </div>
-            </div>
-        </form>
+  <a href="/events" class="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 no-underline mb-6 transition-colors">
+    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 11L5 7l4-4"/>
+    </svg>
+    All events
+  </a>
+
+  <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <div class="px-6 pt-6 pb-5 border-b border-slate-100 dark:border-slate-700">
+      <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-50 leading-snug">New Event</h1>
     </div>
+
+    <form action="/events/create" method="post">
+      <div class="grid grid-cols-3 divide-x divide-y divide-slate-100 dark:divide-slate-700 border-b border-slate-100 dark:border-slate-700">
+
+        <div class="col-span-3 flex flex-col px-5 py-4">
+          <label for="title" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">Event Title</label>
+          <input type="text" name="title" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div class="col-span-3 flex flex-col px-5 py-4">
+          <label for="description" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">Event Description</label>
+          <textarea name="description" rows="2" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"></textarea>
+        </div>
+
+        <div class="col-span-3 flex flex-col px-5 py-4">
+          <label for="location" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">Event Location</label>
+          <input type="text" name="location" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div class="col-span-3 flex flex-col px-5 py-4">
+          <label for="category" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">Event Category</label>
+          <input type="text" name="category" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div class="flex flex-col px-5 py-4">
+          <label for="capacity" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">Attendee Limit</label>
+          <input type="number" name="capacity" value="1" min="1" step="1" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div class="flex flex-col px-5 py-4">
+          <label for="start_date" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">Start Time</label>
+          <input type="datetime-local" name="start_date" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div class="flex flex-col px-5 py-4">
+          <label for="end_date" class="text-sm text-slate-400 dark:text-slate-500 tracking-wide font-medium mb-1">End Time</label>
+          <input type="datetime-local" name="end_date" required
+            class="px-2 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div class="col-span-3 px-6 py-4 bg-slate-50 dark:bg-slate-900/40 flex items-center gap-2.5 flex-wrap">
+          <button type="submit"
+            class="px-4 py-2 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium cursor-pointer hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+            Create Event
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
 </div>

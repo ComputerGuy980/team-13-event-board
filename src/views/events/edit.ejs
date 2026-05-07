@@ -1,75 +1,77 @@
-<section class="max-w-3xl p-6 border border-slate-200 rounded-2xl bg-white shadow-lg">
-  <h1 class="text-2xl font-bold text-slate-900 mb-4">Edit Event</h1>
+<section class="max-w-3xl p-6 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
+  <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-4">Edit Event</h1>
   <% if (pageError) { %>
     <%- include("../partials/error", { message: pageError }) %>
   <% } %>
 
-  <form 
+  <form
     hx-post="/events/<%= event.id %>/edit"
     hx-target="#edit-result"
     hx-swap="innerHTML"
     class="space-y-4"
   >
     <div>
-      <label class="block text-sm font-medium">Title</label>
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
       <input
         type="text"
         name="title"
         value="<%= event.title %>"
-        class="w-full border rounded-lg px-3 py-2"
+        class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"
       />
     </div>
 
     <div>
-      <label class="block text-sm font-medium">Description</label>
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
       <textarea
         name="description"
-        class="w-full border rounded-lg px-3 py-2"
+        class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"
       ><%= event.description %></textarea>
     </div>
 
     <div>
-      <label class="block text-sm font-medium">Location</label>
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Location</label>
       <input
         type="text"
         name="location"
         value="<%= event.location %>"
-        class="w-full border rounded-lg px-3 py-2"
+        class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"
       />
     </div>
 
     <div>
-      <label class="block text-sm font-medium">Category</label>
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
       <input
         type="text"
         name="category"
         value="<%= event.category %>"
-        class="w-full border rounded-lg px-3 py-2"
+        class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"
       />
     </div>
 
     <div>
-      <label class="block text-sm font-medium">Capacity</label>
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Capacity</label>
       <input
         type="number"
         name="capacity"
         value="<%= event.capacity %>"
-        class="w-full border rounded-lg px-3 py-2"
+        class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"
       />
     </div>
 
-    <button
-      type="submit"
-      class="px-4 py-2 rounded-lg bg-blue-600 text-white"
-    >
-      Save Changes
-    </button>
-    <a
-      href="/events/<%= event.id %>"
-      class="ml-4 text-slate-500 underline"
-    >
-      Cancel
-    </a>
+    <div class="flex items-center gap-4 pt-1">
+      <button
+        type="submit"
+        class="px-4 py-2 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white font-medium cursor-pointer hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+      >
+        Save Changes
+      </button>
+      <a
+        href="/events/<%= event.id %>"
+        class="text-slate-500 dark:text-slate-400 underline hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+      >
+        Cancel
+      </a>
+    </div>
   </form>
   <div id="edit-result" class="mt-4"></div>
 </section>
